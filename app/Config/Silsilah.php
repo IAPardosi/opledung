@@ -96,4 +96,47 @@ class Silsilah extends BaseConfig
         'meninggal'       => 'Meninggal',
         'tidak_diketahui' => 'Tidak Diketahui',
     ];
+
+    /**
+     * Label kolom data orang untuk tampilan (mis. detail usulan).
+     *
+     * @var array<string, string>
+     */
+    public array $labelKolom = [
+        'nama_lengkap'        => 'Nama lengkap',
+        'nama_panggilan'      => 'Nama panggilan',
+        'gelar_adat'          => 'Gelar adat',
+        'jenis_kelamin'       => 'Jenis kelamin',
+        'urutan_anak'         => 'Anak ke-',
+        'pasangan_id'         => 'Ibu/ayah',
+        'nama_ibu'            => 'Nama ibu',
+        'marga_nama'          => 'Marga',
+        'tempat_lahir'        => 'Tempat lahir',
+        'tanggal_lahir'       => 'Tanggal lahir',
+        'tahun_lahir'         => 'Tahun lahir',
+        'agama'               => 'Agama',
+        'status_perkawinan'   => 'Status perkawinan',
+        'pendidikan_terakhir' => 'Pendidikan terakhir',
+        'pekerjaan'           => 'Pekerjaan',
+        'golongan_darah'      => 'Golongan darah',
+        'kewarganegaraan'     => 'Kewarganegaraan',
+        'nik'                 => 'NIK',
+        'no_kk'               => 'No. KK',
+        'alamat_jalan'        => 'Alamat',
+        'rt'                  => 'RT',
+        'rw'                  => 'RW',
+        'desa_kode'           => 'Desa/kelurahan',
+        'kecamatan_kode'      => 'Kecamatan',
+        'kabupaten_kode'      => 'Kabupaten/kota',
+        'provinsi_kode'       => 'Provinsi',
+        'kode_pos'            => 'Kode pos',
+        'no_hp'               => 'No. HP',
+        'email'               => 'Email',
+        'sembunyikan_kontak'  => 'Sembunyikan kontak',
+        'status_hidup'        => 'Status',
+        'tanggal_wafat'       => 'Tanggal wafat',
+        'tahun_wafat'         => 'Tahun wafat',
+        'tempat_makam'        => 'Tempat makam',
+        'biografi'            => 'Biografi',
+    ];
 }

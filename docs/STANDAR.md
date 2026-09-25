@@ -3,7 +3,7 @@
 Dokumen ini adalah acuan resmi pengembangan fase pertama. Setiap perubahan
 standar harus diperbarui di dokumen ini terlebih dahulu sebelum diterapkan di kode.
 
-Versi: 1.1 · Status: Disepakati untuk Fase 1
+Versi: 1.2 · Status: Disepakati untuk Fase 1
 
 ---
 
@@ -23,8 +23,8 @@ Versi: 1.1 · Status: Disepakati untuk Fase 1
 | PHP             | 8.2 atau lebih baru                                   |
 | Database        | MySQL 8 / MariaDB 10.6+ (wajib dukung recursive CTE)  |
 | Autentikasi     | CodeIgniter Shield                                    |
-| Frontend        | Bootstrap 5, JavaScript ringan (tanpa SPA framework)  |
-| Visual pohon    | Library pohon keluarga berbasis D3 (mis. family-chart), dimuat per cabang |
+| Frontend        | Bootstrap 5, JavaScript ringan (tanpa SPA framework); aset disimpan sendiri di `public/assets/vendor`, tanpa CDN |
+| Visual pohon    | D3 v7 (tree layout), dimuat per cabang lewat `/api/pohon/{id}` |
 | Import data     | PhpSpreadsheet (Excel .xlsx dan CSV)                  |
 
 ## 3. Aturan Adat yang Diterapkan di Sistem
@@ -180,7 +180,7 @@ Field mengikuti data kependudukan Indonesia (KTP/KK) ditambah data adat.
 2. Kelola marga (Super Admin) dan Silsilah Pokok G1–G10 (Ketua Adat).
 3. Tambah/ubah/cari anggota: tambah anak, tambah pasangan, tambah boru beserta suami dan anaknya.
 4. Alur usulan dan verifikasi data.
-5. Import massal Excel/CSV dengan template standar (`docs/template-import-anggota.csv`)
+5. Import massal Excel/CSV dengan template standar (`docs/template-import-anggota.csv`, panduan di `docs/PANDUAN-IMPORT.md`)
    dan validasi per baris (laporan baris yang gagal).
 6. Halaman profil anggota: data diri, orang tua, pasangan, anak, saudara kandung.
 7. Jalur ke leluhur: `G1 → G2 → … → anggota`.

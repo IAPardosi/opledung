@@ -143,10 +143,11 @@ class DemoSilsilahSeeder extends Seeder
     {
         $suami = $this->service->tambahPasangan($boru->id, $this->dataOrang('L', $generasi, true), [], null);
         for ($i = 0, $n = mt_rand(1, 3); $i < $n; $i++) {
-            $this->service->tambahAnak($boru->id, [
-                ...$this->dataOrang(mt_rand(0, 1) ? 'L' : 'P', $generasi + 1, false, true),
-                'pasangan_id' => $suami->id,
-            ], null);
+            $jk   = mt_rand(0, 1) ? 'L' : 'P';
+            $data = $this->dataOrang($jk, $generasi + 1, false, true);
+            // Anak boru memakai marga ayahnya (suami boru).
+            $data['nama_lengkap'] = strtok($data['nama_lengkap'], ' ') . ($jk === 'P' ? ' br. ' : ' ') . $suami->marga_nama;
+            $this->service->tambahAnak($boru->id, [...$data, 'pasangan_id' => $suami->id], null);
         }
     }
 

@@ -1,4 +1,5 @@
-kode_anggota,generasi_ke,garis,kode_ayah,nama_lengkap,nama_panggilan,gelar_adat,jenis_kelamin,urutan_anak,nama_ibu,nama_pasangan,marga_pasangan,tempat_lahir,tanggal_lahir,agama,status_perkawinan,pendidikan_terakhir,pekerjaan,golongan_darah,kewarganegaraan,nik,no_kk,alamat_jalan,rt,rw,desa_kelurahan,kecamatan,kabupaten_kota,provinsi,kode_pos,no_hp,email,status_hidup,tanggal_wafat,tempat_makam
-PDS-G01-000001,1,utama,,Pardosi,,Op. Ledung,Laki-laki,1,,,,,,,Kawin,,,,WNI,,,,,,,,,,,,,Meninggal,,
-PDS-G11-000101,11,utama,PDS-G10-000090,Contoh Pardosi,Contoh,,Laki-laki,1,Contoh boru Simanjuntak,Contoh boru Sitompul,Sitompul,Kota Medan,1975-04-12,Kristen Protestan,Kawin,D4/S1,Wiraswasta,O,WNI,,,Jl. Contoh No. 1,001,002,Kelurahan Contoh,Kecamatan Contoh,Kota Medan,Sumatera Utara,20111,081200000000,contoh@example.com,Hidup,,
-PDS-G12-000205,12,boru,PDS-G11-000101,Contoh br. Pardosi,,,Perempuan,2,Contoh boru Sitompul,Contoh Nainggolan,Nainggolan,Kota Medan,2000-08-17,Kristen Protestan,Kawin,D4/S1,Karyawan Swasta,A,WNI,,,,,,,,,,,,,Hidup,,
+kode_ref,kode_induk,nama_lengkap,nama_panggilan,gelar_adat,jenis_kelamin,urutan_anak,nama_ibu,nama_pasangan,marga_pasangan,tempat_lahir,tanggal_lahir,tahun_lahir,agama,status_perkawinan,pendidikan_terakhir,pekerjaan,golongan_darah,kewarganegaraan,nik,no_kk,alamat_jalan,rt,rw,kode_wilayah,kode_pos,no_hp,email,status_hidup,tanggal_wafat,tahun_wafat,tempat_makam
+A1,,Contoh Leluhur Pardosi,,Op. Contoh,L,1,,Contoh boru Simanjuntak,Simanjuntak,,,1680,,Kawin,,,,WNI,,,,,,,,,,Meninggal,,1745,
+A2,A1,Contoh Anak Pardosi,Contoh,,L,1,,Contoh boru Sitompul,Sitompul,Tarutung,,1712,,Kawin,,,,WNI,,,,,,12.02,,,,Meninggal,,1780,
+A3,A1,Contoh br. Pardosi,,,P,2,,Contoh Nainggolan,Nainggolan,Tarutung,,1715,,Kawin,,,,WNI,,,,,,,,,,Meninggal,,,
+A4,A3,Contoh Anak Boru Nainggolan,,,L,1,,,,,,1740,,,,,,WNI,,,,,,,,,,Meninggal,,,

@@ -1,0 +1,13 @@
+{
+  "name": "opledung-aset",
+  "private": true,
+  "description": "Aset frontend (disalin ke public/assets/vendor, ikut di-commit agar server PHP tidak butuh Node).",
+  "scripts": {
+    "aset": "node scripts/salin-aset.mjs"
+  },
+  "devDependencies": {
+    "bootstrap": "5.3.3",
+    "bootstrap-icons": "1.11.3",
+    "d3": "7.9.0"
+  }
+}

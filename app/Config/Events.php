@@ -23,6 +23,17 @@ use CodeIgniter\HotReloader\HotReloader;
  *      Events::on('create', [$myInstance, 'myMethod']);
  */
 
+/*
+ * Akun baru hasil registrasi otomatis masuk ke marga aktif pertama.
+ * Super Admin dapat memindahkannya lewat menu Pengguna.
+ */
+Events::on('register', static function ($user): void {
+    $marga = (new \App\Models\MargaModel())->where('is_active', 1)->orderBy('id', 'ASC')->first();
+    if ($marga !== null && $user->marga_id === null) {
+        (new \App\Models\UserModel())->update($user->id, ['marga_id' => $marga['id']]);
+    }
+});
+
 Events::on('pre_system', static function (): void {
     if (ENVIRONMENT !== 'testing') {
         $value = ini_get('zlib.output_compression');

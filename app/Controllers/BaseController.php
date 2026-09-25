@@ -1,45 +1,52 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controllers;
 
+use App\Models\MargaModel;
 use CodeIgniter\Controller;
+use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\Shield\Entities\User;
 use Psr\Log\LoggerInterface;
 
-/**
- * BaseController provides a convenient place for loading components
- * and performing functions that are needed by all your controllers.
- *
- * Extend this class in any new controllers:
- * ```
- *     class Home extends BaseController
- * ```
- *
- * For security, be sure to declare any new methods as protected or private.
- */
 abstract class BaseController extends Controller
 {
-    /**
-     * Be sure to declare properties for any property fetch you initialized.
-     * The creation of dynamic property is deprecated in PHP 8.2.
-     */
+    protected $helpers = ['form', 'url', 'auth', 'silsilah'];
 
-    // protected $session;
-
-    /**
-     * @return void
-     */
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
-        // Load here all helpers you want to be available in your controllers that extend BaseController.
-        // Caution: Do not put the this below the parent::initController() call below.
-        // $this->helpers = ['form', 'url'];
-
-        // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
+    }
 
-        // Preload any models, libraries, etc, here.
-        // $this->session = service('session');
+    protected function user(): ?User
+    {
+        return auth()->loggedIn() ? auth()->user() : null;
+    }
+
+    /**
+     * Marga yang sedang ditampilkan: ?marga=KODE, marga akun yang login, atau marga aktif pertama.
+     *
+     * @return array<string, mixed>
+     */
+    protected function margaAktif(): array
+    {
+        $model = new MargaModel();
+        $kode  = $this->request->getGet('marga');
+
+        $marga = match (true) {
+            is_string($kode) && $kode !== ''    => $model->where('kode', strtoupper($kode))->where('is_active', 1)->first(),
+            $this->user()?->marga_id !== null   => $model->find($this->user()->marga_id),
+            default                             => null,
+        };
+        $marga ??= $model->where('is_active', 1)->orderBy('id', 'ASC')->first();
+
+        if ($marga === null) {
+            throw PageNotFoundException::forPageNotFound('Belum ada marga yang aktif.');
+        }
+
+        return $marga;
     }
 }

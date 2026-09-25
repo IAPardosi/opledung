@@ -77,4 +77,59 @@ class PersonModel extends Model
             ->orderBy('id', 'ASC')
             ->findAll();
     }
+
+    /**
+     * Filter daftar anggota garis marga (publik): generasi, garis, dan kata kunci nama.
+     * Hasilnya dipakai dengan paginate().
+     */
+    public function daftar(int $margaId, ?int $generasi, ?string $garis, ?string $cari): self
+    {
+        $this->select('persons.id, persons.kode_anggota, persons.nama_lengkap, persons.gelar_adat, persons.generasi_ke,
+                persons.garis, persons.jenis_kelamin, persons.status_hidup, persons.tahun_lahir, persons.tahun_wafat,
+                induk.nama_lengkap AS nama_induk, induk.id AS induk_id')
+            ->join('persons induk', 'induk.id = persons.induk_id', 'left')
+            ->where('persons.marga_id', $margaId)
+            ->whereIn('persons.garis', $garis !== null && in_array($garis, ['utama', 'boru', 'anak_boru'], true) ? [$garis] : ['utama', 'boru']);
+
+        if ($generasi !== null) {
+            $this->where('persons.generasi_ke', $generasi);
+        }
+        if ($cari !== null && trim($cari) !== '') {
+            $this->cariNama($cari);
+        }
+
+        return $this->orderBy('persons.generasi_ke', 'ASC')
+            ->orderBy('persons.induk_id', 'ASC')
+            ->orderBy('persons.urutan_anak', 'ASC');
+    }
+
+    /**
+     * Pencarian nama: FULLTEXT (awalan kata) untuk kata >= 3 huruf, selain itu LIKE.
+     * Kode anggota (mis. PDS-G12-000345) dicari persis.
+     */
+    public function cariNama(string $cari): self
+    {
+        $cari = trim($cari);
+
+        if (preg_match('/^[A-Za-z]{2,5}-G\d{2,3}-\d{6}$/', $cari)) {
+            return $this->where('persons.kode_anggota', strtoupper($cari));
+        }
+
+        $kata = array_values(array_filter(
+            preg_split('/[^\p{L}\p{N}]+/u', $cari) ?: [],
+            static fn (string $k): bool => mb_strlen($k) >= 3,
+        ));
+
+        if ($kata !== [] && $this->db->DBDriver === 'MySQLi') {
+            $boolean = implode(' ', array_map(static fn (string $k): string => '+' . $k . '*', $kata));
+
+            return $this->where('MATCH(persons.nama_lengkap, persons.nama_panggilan, persons.gelar_adat) AGAINST(' . $this->db->escape($boolean) . ' IN BOOLEAN MODE)', null, false);
+        }
+
+        return $this->groupStart()
+            ->like('persons.nama_lengkap', $cari)
+            ->orLike('persons.nama_panggilan', $cari)
+            ->orLike('persons.gelar_adat', $cari)
+            ->groupEnd();
+    }
 }

@@ -1,0 +1,74 @@
+:root {
+    --warna-utama: #7a1f2b;
+    --warna-utama-gelap: #5a1520;
+    --warna-aksen: #c49a3a;
+    --warna-latar: #f6f4f1;
+    --garis-utama: #7a1f2b;
+    --garis-boru: #1f6f78;
+    --garis-anak_boru: #5f8f94;
+    --garis-pasangan: #7d7d7d;
+}
+
+body { background: var(--warna-latar); min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; }
+
+.navbar-silsilah { background: var(--warna-utama); }
+.navbar-silsilah .nav-link.active { font-weight: 600; box-shadow: inset 0 -2px 0 var(--warna-aksen); }
+.btn-aksen { background: var(--warna-aksen); color: #1c1407; border: 0; }
+.btn-aksen:hover { background: #b08830; color: #1c1407; }
+.btn-utama { background: var(--warna-utama); color: #fff; border: 0; }
+.btn-utama:hover { background: var(--warna-utama-gelap); color: #fff; }
+.text-utama { color: var(--warna-utama); }
+.footer-silsilah { border-top: 1px solid #e3ded7; background: #fff; }
+
+.hero { background: linear-gradient(135deg, var(--warna-utama) 0%, var(--warna-utama-gelap) 100%); color: #fff; }
+.hero .lead { color: rgba(255, 255, 255, .85); }
+.stat { background: #fff; border-radius: .75rem; padding: 1rem 1.25rem; height: 100%; border: 1px solid #ebe6df; }
+.stat .angka { font-size: 1.75rem; font-weight: 700; color: var(--warna-utama); line-height: 1.1; }
+.stat .label { color: #6c6258; font-size: .875rem; }
+
+.card { border-color: #ebe6df; }
+.card-header { background: #fbfaf8; }
+
+.badge-garis { font-weight: 500; }
+.garis-utama { background: var(--garis-utama) !important; }
+.garis-boru { background: var(--garis-boru) !important; }
+.garis-anak_boru { background: var(--garis-anak_boru) !important; }
+.garis-pasangan { background: var(--garis-pasangan) !important; }
+
+.bar-generasi { height: .6rem; border-radius: .3rem; background: #efe9e2; overflow: hidden; display: flex; }
+.bar-generasi span { display: block; height: 100%; }
+
+.avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; background: var(--warna-utama); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 600; flex-shrink: 0; }
+.avatar-sm { width: 40px; height: 40px; font-size: .95rem; }
+
+.jalur { display: flex; flex-wrap: wrap; gap: .25rem; align-items: center; font-size: .875rem; }
+.jalur a { text-decoration: none; padding: .15rem .5rem; border-radius: 1rem; background: #fff; border: 1px solid #e3ded7; color: #3b332c; }
+.jalur a:hover { border-color: var(--warna-utama); color: var(--warna-utama); }
+.jalur .aktif { background: var(--warna-utama); color: #fff; border-color: var(--warna-utama); padding: .15rem .5rem; border-radius: 1rem; }
+.jalur .panah { color: #a9a097; }
+
+dl.data-profil dt { font-weight: 500; color: #6c6258; font-size: .875rem; }
+dl.data-profil dd { margin-bottom: .6rem; }
+
+.daftar-orang .list-group-item { display: flex; gap: .75rem; align-items: center; }
+
+/* Pohon silsilah */
+.pohon-wrap { position: relative; background: #fff; border: 1px solid #ebe6df; border-radius: .75rem; overflow: hidden; }
+#pohon { width: 100%; height: 72vh; min-height: 420px; display: block; cursor: grab; touch-action: none; }
+#pohon:active { cursor: grabbing; }
+.pohon-kontrol { position: absolute; top: .75rem; right: .75rem; display: flex; flex-direction: column; gap: .25rem; }
+.pohon-legenda { position: absolute; left: .75rem; bottom: .75rem; background: rgba(255,255,255,.9); padding: .35rem .6rem; border-radius: .5rem; font-size: .75rem; }
+.pohon-legenda i { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin: 0 .2rem 0 .5rem; vertical-align: -1px; }
+.node rect { stroke-width: 1.5px; rx: 8; }
+.node text { font-size: 12px; pointer-events: none; }
+.node .nama { font-weight: 600; fill: #231d18; }
+.node .sub { fill: #6c6258; font-size: 10.5px; }
+.node .toggle { cursor: pointer; }
+.node.terpilih rect.kartu { stroke-width: 3px; }
+.link { fill: none; stroke: #cfc6bb; stroke-width: 1.5px; }
+
+.form-section { font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--warna-utama); font-weight: 600;
+    border-bottom: 1px solid #ebe6df; padding-bottom: .35rem; margin: 1.5rem 0 1rem; }
+.form-section:first-child { margin-top: 0; }

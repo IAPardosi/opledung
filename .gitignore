@@ -124,3 +124,6 @@ _modules/*
 
 /results/
 /phpunit.xml
+
+# Node (aset frontend disalin ke public/assets/vendor)
+node_modules/
