@@ -84,6 +84,12 @@ $orangKecil = static function ($o, ?string $ket = null): string {
         </div>
     </div>
 
+    <?php if ($tutur !== null) : ?>
+        <div class="mb-4"><?= view('partials/tutur', ['hasil' => $tutur, 'dari' => $saya, 'ke' => $p, 'diri' => true]) ?></div>
+    <?php elseif (auth()->user()->person_id === null) : ?>
+        <div class="alert alert-light border small mb-4"><i class="bi bi-people text-utama"></i> Tautkan akun Anda ke data silsilah (tombol <b>"Ini saya"</b> pada profil Anda) untuk melihat partuturan Anda dengan anggota ini.</div>
+    <?php endif ?>
+
     <div class="row g-4">
         <div class="col-lg-7">
             <div class="card mb-4">

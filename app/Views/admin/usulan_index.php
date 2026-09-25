@@ -15,10 +15,10 @@
     <div class="card">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Diajukan</th><th>Jenis</th><th>Untuk</th><th class="text-center">Gen.</th><th>Pengusul</th><th>Status</th><th></th></tr></thead>
+                <thead class="table-light"><tr><th>Diajukan</th><th>Jenis</th><th>Untuk</th><th class="text-center">Gen.</th><th>Pengusul</th><th>Saksi</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                 <?php if ($rows === []) : ?>
-                    <tr><td colspan="7" class="text-center text-body-secondary py-4">Tidak ada usulan.</td></tr>
+                    <tr><td colspan="8" class="text-center text-body-secondary py-4">Tidak ada usulan.</td></tr>
                 <?php endif ?>
                 <?php foreach ($rows as $r) : ?>
                     <tr>
@@ -27,6 +27,7 @@
                         <td><?= esc($r['nama_lengkap'] ?? '–') ?><div class="small text-body-secondary font-monospace"><?= esc($r['kode_anggota'] ?? '') ?></div></td>
                         <td class="text-center"><?= esc($r['generasi_ke'] ?? '') ?></td>
                         <td><?= esc($r['username']) ?></td>
+                        <td class="small text-nowrap"><span class="text-success"><i class="bi bi-check-circle"></i> <?= (int) $r['saksi_benar'] ?></span><?php if ((int) $r['saksi_salah'] > 0) : ?> <span class="text-danger"><i class="bi bi-x-circle"></i> <?= (int) $r['saksi_salah'] ?></span><?php endif ?></td>
                         <td><?= view('partials/status_usulan', ['status' => $r['status']]) ?></td>
                         <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="<?= site_url('admin/usulan/' . $r['id']) ?>">Periksa</a></td>
                     </tr>

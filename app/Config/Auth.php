@@ -46,8 +46,8 @@ class Auth extends ShieldAuth
      * --------------------------------------------------------------------
      */
     public array $views = [
-        'login'                       => '\CodeIgniter\Shield\Views\login',
-        'register'                    => '\CodeIgniter\Shield\Views\register',
+        'login'                       => 'auth/login',
+        'register'                    => 'auth/register',
         'layout'                      => 'layouts/main',
         'action_email_2fa'            => '\CodeIgniter\Shield\Views\email_2fa_show',
         'action_email_2fa_verify'     => '\CodeIgniter\Shield\Views\email_2fa_verify',
@@ -74,7 +74,7 @@ class Auth extends ShieldAuth
      * to apply any logic you may need.
      */
     public array $redirects = [
-        'register'          => '/',
+        'register'          => '/pendaftaran',
         'login'             => '/',
         'logout'            => 'login',
         'force_reset'       => '/',
@@ -487,6 +487,11 @@ class Auth extends ShieldAuth
      */
     public function permissionDeniedRedirect(): string
     {
+        // Calon member diarahkan menyelesaikan pendaftaran silsilahnya.
+        if (auth()->loggedIn() && auth()->user()->inGroup('calon')) {
+            return $this->getUrl('/pendaftaran');
+        }
+
         $url = setting('Auth.redirects')['permission_denied'];
 
         return $this->getUrl($url);

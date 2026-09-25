@@ -14,7 +14,10 @@ use CodeIgniter\Shield\Config\AuthGroups as ShieldAuthGroups;
  */
 class AuthGroups extends ShieldAuthGroups
 {
-    public string $defaultGroup = 'member';
+    /**
+     * Akun baru berstatus "calon" sampai silsilahnya divalidasi.
+     */
+    public string $defaultGroup = 'calon';
 
     public array $groups = [
         'superadmin' => [
@@ -23,15 +26,27 @@ class AuthGroups extends ShieldAuthGroups
         ],
         'ketua_adat' => [
             'title'       => 'Ketua Adat',
-            'description' => 'Menetapkan dan memvalidasi Silsilah Pokok marganya.',
+            'description' => 'Menetapkan dan memvalidasi Silsilah Pokok, serta istilah partuturan.',
         ],
         'verifikator' => [
-            'title'       => 'Admin/Verifikator',
-            'description' => 'Memverifikasi usulan data anggota di marganya.',
+            'title'       => 'Admin Marga',
+            'description' => 'Memverifikasi usulan dan pendaftaran di seluruh marganya.',
+        ],
+        'admin_wilayah' => [
+            'title'       => 'Admin Wilayah',
+            'description' => 'Memverifikasi pendaftaran dan usulan di wilayah atau cabang (pomparan) tertentu.',
+        ],
+        'humas' => [
+            'title'       => 'Pengurus Informasi',
+            'description' => 'Mengelola berita dan kegiatan.',
         ],
         'member' => [
             'title'       => 'Member',
-            'description' => 'Mengelola profil sendiri dan mengusulkan data keluarga.',
+            'description' => 'Anggota terverifikasi: melihat silsilah dan mengusulkan data keluarga.',
+        ],
+        'calon' => [
+            'title'       => 'Calon Member',
+            'description' => 'Baru mendaftar; menunggu validasi silsilah.',
         ],
     ];
 
@@ -41,10 +56,12 @@ class AuthGroups extends ShieldAuthGroups
         'users.manage'       => 'Mengelola akun pengguna dan role',
         'silsilah.pokok'     => 'Mengubah dan memvalidasi Silsilah Pokok',
         'silsilah.edit'      => 'Menambah dan mengubah data anggota secara langsung',
-        'silsilah.verify'    => 'Menyetujui atau menolak usulan data',
+        'silsilah.verify'    => 'Menyetujui atau menolak usulan dan pendaftaran',
         'silsilah.propose'   => 'Mengusulkan tambah/ubah data keluarga',
         'silsilah.view'      => 'Melihat detail silsilah dan profil anggota',
         'data.sensitive'     => 'Melihat NIK dan No. KK',
+        'partuturan.kelola'  => 'Mengubah istilah partuturan',
+        'konten.kelola'      => 'Mengelola berita dan kegiatan',
     ];
 
     public array $matrix = [
@@ -54,11 +71,15 @@ class AuthGroups extends ShieldAuthGroups
             'users.*',
             'silsilah.*',
             'data.*',
+            'partuturan.*',
+            'konten.*',
         ],
         'ketua_adat' => [
             'admin.access',
             'silsilah.*',
             'data.sensitive',
+            'partuturan.kelola',
+            'konten.kelola',
         ],
         'verifikator' => [
             'admin.access',
@@ -67,10 +88,27 @@ class AuthGroups extends ShieldAuthGroups
             'silsilah.propose',
             'silsilah.view',
             'data.sensitive',
+            'konten.kelola',
+        ],
+        // Hak edit/verifikasi admin wilayah dibatasi lingkupnya oleh App\Services\LingkupAdmin.
+        'admin_wilayah' => [
+            'admin.access',
+            'silsilah.edit',
+            'silsilah.verify',
+            'silsilah.propose',
+            'silsilah.view',
+            'data.sensitive',
+        ],
+        'humas' => [
+            'admin.access',
+            'konten.kelola',
+            'silsilah.propose',
+            'silsilah.view',
         ],
         'member' => [
             'silsilah.propose',
             'silsilah.view',
         ],
+        'calon' => [],
     ];
 }

@@ -139,4 +139,28 @@ class Silsilah extends BaseConfig
         'tempat_makam'        => 'Tempat makam',
         'biografi'            => 'Biografi',
     ];
+
+    /**
+     * @var array<string, array{label: string, ikon: string}>
+     */
+    public array $kategoriBerita = [
+        'berita'     => ['label' => 'Berita', 'ikon' => 'bi-newspaper'],
+        'pengumuman' => ['label' => 'Pengumuman', 'ikon' => 'bi-megaphone'],
+        'sukacita'   => ['label' => 'Sukacita', 'ikon' => 'bi-balloon-heart'],
+        'dukacita'   => ['label' => 'Dukacita', 'ikon' => 'bi-flower1'],
+    ];
+
+    /**
+     * @var array<string, string>
+     */
+    public array $jenisKegiatan = [
+        'pesta_adat'    => 'Pesta Adat',
+        'bona_taon'     => 'Pesta Bona Taon',
+        'partangiangan' => 'Partangiangan (Ibadah)',
+        'arisan'        => 'Arisan / Punguan',
+        'rapat'         => 'Rapat Pengurus',
+        'sosial'        => 'Kegiatan Sosial',
+        'olahraga'      => 'Olahraga & Kebersamaan',
+        'lainnya'       => 'Lainnya',
+    ];
 }

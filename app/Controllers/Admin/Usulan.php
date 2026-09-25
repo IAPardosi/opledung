@@ -9,6 +9,7 @@ use App\Exceptions\SilsilahException;
 use App\Models\ChangeRequestModel;
 use App\Models\PersonModel;
 use App\Models\WilayahModel;
+use App\Services\LingkupAdmin;
 use App\Services\UsulanService;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -32,6 +33,9 @@ class Usulan extends BaseController
         if (! $user->inGroup('superadmin')) {
             $model->where('change_requests.marga_id', $user->marga_id);
         }
+        (new LingkupAdmin())->saringUsulan($model->builder(), $user);
+        $model->select('(SELECT COUNT(*) FROM konfirmasi_keluarga k WHERE k.change_request_id = change_requests.id AND k.benar = 1) AS saksi_benar,
+            (SELECT COUNT(*) FROM konfirmasi_keluarga k WHERE k.change_request_id = change_requests.id AND k.benar = 0) AS saksi_salah', false);
 
         return view('admin/usulan_index', [
             'rows'   => $model->paginate(30),
@@ -48,7 +52,7 @@ class Usulan extends BaseController
             ->join('users', 'users.id = change_requests.user_id', 'left')
             ->find($id);
 
-        if ($usulan === null || ! $service->bolehVerifikasi($this->user(), (int) $usulan['marga_id'])) {
+        if ($usulan === null || ! $service->bolehVerifikasi($this->user(), $usulan)) {
             throw PageNotFoundException::forPageNotFound('Usulan tidak ditemukan.');
         }
 
@@ -57,7 +61,8 @@ class Usulan extends BaseController
         return view('admin/usulan_detail', [
             'usulan' => $usulan,
             'data'   => $this->labelNilai($service->dataTampil($usulan)),
-            'target' => $usulan['person_id'] ? $persons->withDeleted()->find($usulan['person_id']) : null,
+            'target'    => $usulan['person_id'] ? $persons->withDeleted()->find($usulan['person_id']) : null,
+            'kesaksian' => $service->kesaksian($id),
             'hasil'  => $usulan['hasil_person_id'] ? $persons->find($usulan['hasil_person_id']) : null,
         ]);
     }
@@ -100,6 +105,11 @@ class Usulan extends BaseController
         }
         if (isset($data['status_hidup'])) {
             $data['status_hidup'] = $cfg->statusHidup[$data['status_hidup']] ?? $data['status_hidup'];
+        }
+        foreach (['tanggal_lahir', 'tanggal_wafat'] as $k) {
+            if (! empty($data[$k])) {
+                $data[$k] = tanggal_indo((string) $data[$k]);
+            }
         }
         if (array_key_exists('sembunyikan_kontak', $data)) {
             $data['sembunyikan_kontak'] = $data['sembunyikan_kontak'] ? 'Ya' : null;

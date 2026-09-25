@@ -21,6 +21,7 @@ $lama = $target?->toRawArray() ?? [];
     <?php if ($target) : ?>
     <div class="card card-body mb-3">
         <div class="small text-body-secondary mb-1"><?= match ($usulan['jenis']) {
+            'daftar_anggota'  => 'Leluhur terdekat yang dipilih pendaftar',
             'tambah_anak'     => 'Anak dari',
             'tambah_pasangan' => 'Pasangan untuk',
             'klaim_profil'    => 'Akun ingin ditautkan ke',
@@ -31,8 +32,38 @@ $lama = $target?->toRawArray() ?? [];
         <?php if ($usulan['jenis'] === 'tambah_anak') : ?>
             <div class="small mt-1">Anak akan tercatat di <b>Generasi <?= $target->generasi_ke + 1 ?></b>.</div>
         <?php endif ?>
+        <?php if ($usulan['jenis'] === 'daftar_anggota') : ?>
+            <?php $antara = $usulan['payload']['antara'] ?? []; ?>
+            <div class="rantai mt-3">
+                <span class="simpul temu"><?= esc($target->nama_lengkap) ?><small>Sundut <?= $target->generasi_ke ?> · sudah tercatat</small></span>
+                <?php foreach ($antara as $i => $a) : ?>
+                    <i class="bi bi-chevron-right text-body-secondary"></i>
+                    <span class="simpul"><?= esc($a['nama_lengkap']) ?><small>Sundut <?= $target->generasi_ke + $i + 1 ?> · baru<?= ! empty($a['tahun_lahir']) ? ' · l. ' . (int) $a['tahun_lahir'] : '' ?></small></span>
+                <?php endforeach ?>
+                <i class="bi bi-chevron-right text-body-secondary"></i>
+                <span class="simpul ujung"><?= esc($data['nama_lengkap'] ?? '') ?><small>Pendaftar · Sundut <?= $target->generasi_ke + count($antara) + 1 ?></small></span>
+            </div>
+            <div class="small text-body-secondary mt-2">Bila disetujui, <?= count($antara) ?> generasi antara dan pendaftar dibuat, lalu akun ditautkan dan dinaikkan menjadi member.</div>
+        <?php endif ?>
     </div>
     <?php endif ?>
+
+    <div class="card card-body mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="fw-semibold"><i class="bi bi-people text-utama"></i> Kesaksian keluarga</div>
+            <div class="small"><span class="badge text-bg-success"><?= $kesaksian['benar'] ?> benar</span> <span class="badge text-bg-danger"><?= $kesaksian['salah'] ?> tidak benar</span></div>
+        </div>
+        <?php if ($kesaksian['daftar'] === []) : ?>
+            <div class="small text-body-secondary mt-1">Belum ada kerabat yang memberi kesaksian.</div>
+        <?php endif ?>
+        <?php foreach ($kesaksian['daftar'] as $k) : ?>
+            <div class="small mt-2 d-flex gap-2">
+                <i class="bi <?= (int) $k['benar'] === 1 ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger' ?>"></i>
+                <div><b><?= esc($k['nama_lengkap'] ?? $k['username']) ?></b> <span class="text-body-secondary">(<?= esc($k['kode_anggota'] ?? '') ?>, Sundut <?= (int) $k['generasi_ke'] ?>)</span>
+                    <?php if ($k['catatan']) : ?><div class="text-body-secondary">"<?= esc($k['catatan']) ?>"</div><?php endif ?></div>
+            </div>
+        <?php endforeach ?>
+    </div>
 
     <?php if ($usulan['catatan_pengusul']) : ?>
         <div class="alert alert-light border"><b>Catatan pengusul:</b> <?= nl2br(esc($usulan['catatan_pengusul'])) ?></div>

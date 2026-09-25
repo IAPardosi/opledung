@@ -22,8 +22,27 @@ class SilsilahPolicy
      */
     private array $batasPokok = [];
 
-    public function __construct(private readonly MargaModel $margaModel = new MargaModel())
+    /**
+     * true saat menjalankan usulan yang lingkupnya sudah diperiksa UsulanService.
+     */
+    private bool $abaikanLingkup = false;
+
+    public function __construct(
+        private readonly MargaModel $margaModel = new MargaModel(),
+        private readonly LingkupAdmin $lingkup = new LingkupAdmin(),
+    ) {
+    }
+
+    /**
+     * Salinan policy yang tidak memeriksa lingkup Admin Wilayah
+     * (dipakai saat menyetujui usulan yang lingkupnya sudah diperiksa).
+     */
+    public function tanpaCekLingkup(): static
     {
+        $salinan                 = clone $this;
+        $salinan->abaikanLingkup = true;
+
+        return $salinan;
     }
 
     public function batasSilsilahPokok(int $margaId): int
@@ -44,7 +63,7 @@ class SilsilahPolicy
     /**
      * Boleh menambah/mengubah struktur silsilah secara langsung pada generasi tertentu?
      */
-    public function bolehKelolaGenerasi(?User $user, int $margaId, int $generasi): bool
+    public function bolehKelolaGenerasi(?User $user, int $margaId, int $generasi, ?Person $konteks = null): bool
     {
         if ($user === null || $this->isSuperAdmin($user)) {
             return true;
@@ -58,7 +77,16 @@ class SilsilahPolicy
             return $user->can('silsilah.pokok');
         }
 
-        return $user->can('silsilah.edit');
+        if (! $user->can('silsilah.edit')) {
+            return false;
+        }
+
+        // Admin Wilayah hanya boleh mengelola orang dalam wilayah/cabangnya.
+        if (! $this->abaikanLingkup && $this->lingkup->terbatas($user)) {
+            return $konteks !== null && $this->lingkup->mencakupPerson($user, $konteks);
+        }
+
+        return true;
     }
 
     /**
@@ -79,7 +107,7 @@ class SilsilahPolicy
             return $user->can('silsilah.pokok');
         }
 
-        if ($this->bolehKelolaGenerasi($user, $person->marga_id, $person->generasi_ke)) {
+        if ($this->bolehKelolaGenerasi($user, $person->marga_id, $person->generasi_ke, $person)) {
             return true;
         }
 
@@ -96,9 +124,12 @@ class SilsilahPolicy
             return false;
         }
 
-        return $this->isSilsilahPokok($person->marga_id, $person->generasi_ke)
-            ? $user->can('silsilah.pokok')
-            : $user->can('silsilah.verify');
+        if ($this->isSilsilahPokok($person->marga_id, $person->generasi_ke)) {
+            return $user->can('silsilah.pokok');
+        }
+
+        return $user->can('silsilah.verify')
+            && ($this->abaikanLingkup || $this->lingkup->mencakupPerson($user, $person));
     }
 
     public function bolehLihatDataSensitif(?User $user, Person $person): bool

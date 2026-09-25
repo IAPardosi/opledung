@@ -28,13 +28,25 @@ class PersonService
     public function __construct(
         private readonly PersonModel $persons = new PersonModel(),
         private readonly MarriageModel $marriages = new MarriageModel(),
-        private readonly SilsilahPolicy $policy = new SilsilahPolicy(),
+        private SilsilahPolicy $policy = new SilsilahPolicy(),
         private readonly AuditLogger $audit = new AuditLogger(),
         private readonly DataPribadiCipher $cipher = new DataPribadiCipher(),
         private readonly Silsilah $config = new Silsilah(),
         ?BaseConnection $db = null,
     ) {
         $this->db = $db ?? Database::connect();
+    }
+
+    /**
+     * Salinan service untuk menjalankan usulan yang lingkup Admin Wilayah-nya
+     * sudah diperiksa UsulanService.
+     */
+    public function untukUsulanTerverifikasi(): static
+    {
+        $salinan         = clone $this;
+        $salinan->policy = $this->policy->tanpaCekLingkup();
+
+        return $salinan;
     }
 
     /**
@@ -85,7 +97,7 @@ class PersonService
 
         $generasi = $induk->generasi_ke + 1;
         $this->policy->pastikan(
-            $this->policy->bolehKelolaGenerasi($aktor, $induk->marga_id, $generasi),
+            $this->policy->bolehKelolaGenerasi($aktor, $induk->marga_id, $generasi, $induk),
             $this->policy->isSilsilahPokok($induk->marga_id, $generasi)
                 ? "Generasi {$generasi} termasuk Silsilah Pokok dan hanya dapat diisi oleh Ketua Adat."
                 : 'Anda tidak memiliki hak untuk menambah anggota. Silakan ajukan usulan data.',
@@ -135,7 +147,7 @@ class PersonService
             throw new SilsilahException('Pasangan hanya dapat ditambahkan untuk anggota garis utama atau boru.');
         }
 
-        $this->policy->pastikan($this->policy->bolehKelolaGenerasi($aktor, $person->marga_id, $person->generasi_ke));
+        $this->policy->pastikan($this->policy->bolehKelolaGenerasi($aktor, $person->marga_id, $person->generasi_ke, $person));
 
         $data['jenis_kelamin'] = $person->jenis_kelamin === 'L' ? 'P' : 'L';
         $data = $this->siapkanData($data, true);
@@ -235,7 +247,7 @@ class PersonService
     {
         $person = $this->ambil($personId);
         $this->policy->pastikan(
-            $this->policy->bolehKelolaGenerasi($aktor, $person->marga_id, $person->generasi_ke)
+            $this->policy->bolehKelolaGenerasi($aktor, $person->marga_id, $person->generasi_ke, $person)
             && (! $person->isTerkunci() || $this->policy->bolehValidasi($aktor, $person)),
         );
 
@@ -262,6 +274,18 @@ class PersonService
 
             throw $e;
         }
+    }
+
+    /**
+     * Memeriksa data orang baru tanpa menyimpan (mis. saat pendaftaran diajukan).
+     *
+     * @param array<string, mixed> $data
+     *
+     * @throws ValidasiDataException
+     */
+    public function periksaData(array $data): void
+    {
+        $this->siapkanData($data, true);
     }
 
     public function ambil(int $personId): Person

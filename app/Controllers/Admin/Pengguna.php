@@ -9,6 +9,7 @@ use App\Models\MargaModel;
 use App\Models\PersonModel;
 use App\Models\UserModel;
 use App\Services\AuditLogger;
+use App\Services\LingkupAdmin;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -75,10 +76,30 @@ class Pengguna extends BaseController
                 $margaId ??= $person->marga_id;
             }
 
+            // Lingkup Admin Wilayah: kab/kota dan cabang (kode anggota leluhur).
+            $lingkup = [];
+            foreach ((array) $this->request->getPost('lingkup_wilayah') as $kode) {
+                if (is_string($kode) && preg_match('/^\d{2}(\.\d{2})?$/', $kode)) {
+                    $lingkup[] = ['jenis' => 'wilayah', 'nilai' => $kode];
+                }
+            }
+            foreach (preg_split('/[\s,;]+/', strtoupper((string) $this->request->getPost('lingkup_cabang')), -1, PREG_SPLIT_NO_EMPTY) as $kodeCabang) {
+                $cabang = (new PersonModel())->where('kode_anggota', $kodeCabang)->first();
+                if ($cabang === null) {
+                    return redirect()->back()->withInput()->with('galat', "Kode cabang {$kodeCabang} tidak ditemukan.");
+                }
+                $lingkup[] = ['jenis' => 'cabang', 'nilai' => (string) $cabang->id];
+            }
+            if ($grup === 'admin_wilayah' && $lingkup === []) {
+                return redirect()->back()->withInput()->with('galat', 'Admin Wilayah wajib diberi minimal satu wilayah atau cabang.');
+            }
+
             $lama = ['grup' => $user->getGroups(), 'marga_id' => $user->marga_id, 'person_id' => $user->person_id, 'active' => $user->active];
             $baru = ['grup' => [$grup], 'marga_id' => $margaId, 'person_id' => $personId, 'active' => (bool) $this->request->getPost('active')];
 
             $users->update($user->id, ['marga_id' => $margaId, 'person_id' => $personId]);
+            (new LingkupAdmin())->simpan($user->id, $grup === 'admin_wilayah' ? $lingkup : []);
+            $baru['lingkup'] = $lingkup;
             $user->syncGroups($grup);
             $baru['active'] ? $user->activate() : $user->deactivate();
 
@@ -87,7 +108,12 @@ class Pengguna extends BaseController
             return redirect()->to('admin/pengguna')->with('sukses', 'Akun ' . $user->username . ' diperbarui.');
         }
 
+        $lingkup = (new LingkupAdmin())->daftar($user->id);
+        $cabangIds = array_map('intval', array_column(array_filter($lingkup, static fn ($l) => $l['jenis'] === 'cabang'), 'nilai'));
+
         return view('admin/pengguna_form', [
+            'wilayahTerpilih' => array_column(array_filter($lingkup, static fn ($l) => $l['jenis'] === 'wilayah'), 'nilai'),
+            'cabang'          => $cabangIds === [] ? [] : (new PersonModel())->whereIn('id', $cabangIds)->findAll(),
             'akun'   => $user,
             'grup'   => $user->getGroups()[0] ?? 'member',
             'label'  => config('AuthGroups')->groups,

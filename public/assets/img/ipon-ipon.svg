@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="12" viewBox="0 0 36 12">
+  <!-- Ipon-ipon: pinggiran gigi segitiga khas gorga (merah, putih, hitam) -->
+  <rect width="36" height="12" fill="#17110f"/>
+  <path d="M0 12 6 0 12 12Z" fill="#a3161e"/>
+  <path d="M12 12 18 0 24 12Z" fill="#fbf7ef"/>
+  <path d="M24 12 30 0 36 12Z" fill="#a3161e"/>
+</svg>

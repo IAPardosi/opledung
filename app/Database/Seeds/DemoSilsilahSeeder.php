@@ -7,7 +7,9 @@ namespace App\Database\Seeds;
 use App\Entities\Person;
 use App\Models\MargaModel;
 use App\Models\UserModel;
+use App\Services\LingkupAdmin;
 use App\Services\PersonService;
+use App\Services\UsulanService;
 use CodeIgniter\Database\Seeder;
 use CodeIgniter\Shield\Entities\User;
 use Faker\Factory;
@@ -131,6 +133,7 @@ class DemoSilsilahSeeder extends Seeder
             ->update(['status_data' => 'terkunci']);
 
         $this->buatAkunDemo((int) $marga['id'], $contohMember);
+        $this->call(DemoKontenSeeder::class);
 
         $total = $this->db->table('persons')->where('marga_id', $marga['id'])->countAllResults();
         printf('  Total %d orang dalam %.1f detik.%s', $total, microtime(true) - $mulai, PHP_EOL);
@@ -210,7 +213,10 @@ class DemoSilsilahSeeder extends Seeder
         $akun  = [
             ['ketuaadat', 'ketuaadat@silsilah.local', 'ketua_adat', null],
             ['verifikator', 'verifikator@silsilah.local', 'verifikator', null],
+            ['adminwilayah', 'adminwilayah@silsilah.local', 'admin_wilayah', null],
+            ['humas', 'humas@silsilah.local', 'humas', null],
             ['member', 'member@silsilah.local', 'member', $member?->id],
+            ['calon', 'calon@silsilah.local', 'calon', null],
         ];
 
         foreach ($akun as [$username, $email, $group, $personId]) {
@@ -227,8 +233,24 @@ class DemoSilsilahSeeder extends Seeder
             $user = $users->findById($users->getInsertID());
             $user->activate();
             $user->syncGroups($group);
+
+            if ($group === 'admin_wilayah') {
+                (new LingkupAdmin())->simpan($user->id, [['jenis' => 'wilayah', 'nilai' => '12']]);
+            }
+            if ($group === 'calon' && $member !== null && $member->induk_id !== null) {
+                // Pendaftaran menunggu validasi: sepupu member (cucu dari ompung member,
+                // melalui amanguda yang belum tercatat).
+                $ompung = $this->service->ambil($this->service->ambil($member->induk_id)->induk_id);
+                (new UsulanService())->ajukanPendaftaran($user, $ompung, [['nama_lengkap' => 'Marihot Pardosi (contoh)', 'tahun_lahir' => 1968, 'status_hidup' => 'hidup']], [
+                    'nama_lengkap'   => 'Calon Pardosi (contoh)',
+                    'jenis_kelamin'  => 'L',
+                    'tanggal_lahir'  => '1996-03-14',
+                    'kabupaten_kode' => '12.02',
+                    'no_hp'          => '081200001111',
+                ], 'Kerabat yang mengenal saya: member (contoh).');
+            }
         }
 
-        echo '  Akun demo: ketuaadat@ / verifikator@ / member@silsilah.local, password Demo#12345' . PHP_EOL;
+        echo '  Akun demo (password Demo#12345): ketuaadat@, verifikator@, adminwilayah@, humas@, member@, calon@silsilah.local' . PHP_EOL;
     }
 }

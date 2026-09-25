@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Models\BeritaModel;
+use App\Models\KegiatanModel;
 use App\Models\PersonModel;
 use App\Services\SilsilahQuery;
 
@@ -18,13 +20,15 @@ class Beranda extends BaseController
         $aktif = array_values(array_filter($rekap, static fn (array $r): bool => $r['hidup'] > 0));
 
         return view('beranda', [
-            'marga'   => $marga,
-            'rekap'   => $rekap,
-            'leluhur' => $leluhur,
-            'total'   => array_sum(array_map(static fn (array $r): int => $r['utama'] + $r['boru'], $rekap)),
-            'hidup'   => array_sum(array_column($rekap, 'hidup')),
-            'maks'    => max([1, ...array_map(static fn (array $r): int => $r['utama'] + $r['boru'], $rekap)]),
-            'aktif'   => $aktif === [] ? null : [$aktif[0]['generasi_ke'], end($aktif)['generasi_ke']],
+            'marga'    => $marga,
+            'rekap'    => $rekap,
+            'leluhur'  => $leluhur,
+            'total'    => array_sum(array_map(static fn (array $r): int => $r['utama'] + $r['boru'], $rekap)),
+            'hidup'    => array_sum(array_column($rekap, 'hidup')),
+            'maks'     => max([1, ...array_map(static fn (array $r): int => $r['utama'] + $r['boru'], $rekap)]),
+            'aktif'    => $aktif === [] ? null : [$aktif[0]['generasi_ke'], end($aktif)['generasi_ke']],
+            'berita'   => (new BeritaModel())->terbit()->findAll(3),
+            'kegiatan' => (new KegiatanModel())->akanDatang()->findAll(3),
         ]);
     }
 }

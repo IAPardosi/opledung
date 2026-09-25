@@ -158,6 +158,7 @@
                     <dt>Generasi</dt><dd>${p.generasi_ke}</dd>
                     <dt>Status</dt><dd>${hidup}</dd>
                 </dl>
+                <div id="tuturPanel"></div>
                 <div class="d-grid gap-2">
                     <a class="btn btn-utama btn-sm" href="${url('anggota/' + p.id)}">
                         ${S.login ? '<i class="bi bi-person-vcard"></i> Lihat profil' : '<i class="bi bi-lock"></i> Masuk untuk lihat profil'}
@@ -165,6 +166,24 @@
                     ${p.garis !== 'anak_boru' ? `<a class="btn btn-outline-secondary btn-sm" href="${url('silsilah/' + p.id)}"><i class="bi bi-bullseye"></i> Jadikan pusat pohon</a>` : ''}
                 </div>
             </div>`;
+        muatTutur(p.id);
+    }
+
+    // Partuturan pengguna yang login kepada orang terpilih.
+    async function muatTutur(id) {
+        if (!S.login) return;
+        try {
+            const res = await fetch(`${S.baseUrl}api/partuturan/${id}`, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+            if (!res.ok || terpilih !== id) return;
+            const t = await res.json();
+            const el = document.getElementById('tuturPanel');
+            if (!el) return;
+            el.innerHTML = t.tersedia
+                ? `<div class="tutur mb-3"><div class="ipon-kecil"></div><div class="isi py-2">
+                        <div class="label">Anda memanggil</div><div class="sebutan" style="font-size:1.4rem">${esc(t.sebutan)}</div>
+                        <div class="ket small">Ia memanggil Anda: <b class="text-white">${esc(t.balik)}</b></div></div></div>`
+                : `<p class="small text-teks-2">${esc(t.pesan)}</p>`;
+        } catch (e) { /* panel partuturan bersifat tambahan */ }
     }
 
     function potong(teks, n) {

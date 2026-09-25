@@ -61,3 +61,64 @@ if (! function_exists('inisial')) {
         return mb_strtoupper(mb_substr($kata[0] ?? '', 0, 1) . mb_substr($kata[1] ?? '', 0, 1));
     }
 }
+
+if (! function_exists('format_isi')) {
+    /**
+     * Format teks sederhana yang aman: paragraf, daftar "- ", **tebal**, *miring*, dan [teks](https://tautan).
+     * Semua teks di-escape terlebih dahulu, jadi HTML dari pengguna tidak pernah dijalankan.
+     */
+    function format_isi(?string $teks): string
+    {
+        if ($teks === null || trim($teks) === '') {
+            return '';
+        }
+
+        $html = '';
+        foreach (preg_split('/\R{2,}/', trim($teks)) as $blok) {
+            $baris = preg_split('/\R/', $blok);
+            $daftar = array_filter($baris, static fn (string $b): bool => str_starts_with(ltrim($b), '- '));
+            if (count($daftar) === count($baris)) {
+                $html .= '<ul>' . implode('', array_map(static fn (string $b): string => '<li>' . format_baris(substr(ltrim($b), 2)) . '</li>', $baris)) . '</ul>';
+            } else {
+                $html .= '<p>' . implode('<br>', array_map('format_baris', $baris)) . '</p>';
+            }
+        }
+
+        return $html;
+    }
+
+    function format_baris(string $baris): string
+    {
+        $baris = esc($baris);
+        $baris = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $baris);
+        $baris = preg_replace('/(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])/', '<em>$1</em>', $baris);
+
+        return preg_replace_callback(
+            '/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/',
+            static fn (array $m): string => '<a href="' . $m[2] . '" target="_blank" rel="noopener nofollow">' . $m[1] . '</a>',
+            $baris,
+        );
+    }
+}
+
+if (! function_exists('tanggal_waktu_indo')) {
+    function tanggal_waktu_indo(?string $waktu): string
+    {
+        if ($waktu === null || $waktu === '') {
+            return '';
+        }
+        $jam = substr($waktu, 11, 5);
+
+        return tanggal_indo($waktu) . ($jam !== '' && $jam !== '00:00' ? ', pukul ' . $jam . ' WIB' : '');
+    }
+}
+
+if (! function_exists('nama_bulan')) {
+    function nama_bulan(string $tanggal, bool $pendek = false): string
+    {
+        $bulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        $nama  = $bulan[(int) substr($tanggal, 5, 2)];
+
+        return $pendek ? mb_substr($nama, 0, 3) : $nama;
+    }
+}

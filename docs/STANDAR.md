@@ -3,7 +3,7 @@
 Dokumen ini adalah acuan resmi pengembangan fase pertama. Setiap perubahan
 standar harus diperbarui di dokumen ini terlebih dahulu sebelum diterapkan di kode.
 
-Versi: 1.2 · Status: Disepakati untuk Fase 1
+Versi: 2.0 · Status: Fase 1 + pengembangan (partuturan, pendaftaran berlapis, kanal informasi, tema Batak)
 
 ---
 
@@ -59,11 +59,14 @@ Versi: 1.2 · Status: Disepakati untuk Fase 1
 
 | Role                   | Hak Akses |
 |------------------------|-----------|
-| Super Admin            | Semua akses; membuat marga baru; mengelola admin dan Ketua Adat |
-| Ketua Adat             | Menetapkan dan memvalidasi Silsilah Pokok (Generasi 1–10) marganya |
-| Admin/Verifikator      | Memverifikasi usulan data anggota (Generasi 11 ke atas) di marganya |
-| Member                 | Mengelola profil sendiri; mengusulkan tambah/ubah data keluarga |
-| Publik (tanpa login)   | Melihat pohon silsilah umum saja |
+| Super Admin            | Semua akses; membuat marga baru; mengatur role dan lingkup admin |
+| Ketua Adat             | Menetapkan dan memvalidasi Silsilah Pokok (Generasi 1–10); menyesuaikan istilah partuturan |
+| Admin Marga            | Memverifikasi pendaftaran dan usulan di seluruh marganya (Generasi 11 ke atas) |
+| Admin Wilayah          | Memverifikasi pendaftaran dan usulan **hanya dalam lingkupnya**: wilayah domisili (provinsi/kab/kota) dan/atau cabang pomparan (keturunan leluhur tertentu) |
+| Pengurus Informasi     | Mengelola berita dan kegiatan |
+| Member                 | Anggota terverifikasi: melihat profil & partuturan, mengelola profil sendiri, mengusulkan data keluarga, memberi kesaksian keluarga |
+| Calon Member           | Baru mendaftar; hanya dapat mengisi silsilah dan melihat status pendaftarannya |
+| Publik (tanpa login)   | Pohon silsilah umum, daftar generasi, kamus partuturan, berita, dan kegiatan |
 
 ### 4.1 Alur Data
 - Semua input dari Member masuk sebagai **usulan** dengan status
@@ -71,12 +74,46 @@ Versi: 1.2 · Status: Disepakati untuk Fase 1
 - Data Silsilah Pokok hanya bisa berubah melalui Ketua Adat.
 - Setiap perubahan dicatat di `audit_logs` (siapa, kapan, data lama, data baru).
 
+### 4.2 Pendaftaran Member dan Validasi Berlapis
+1. **Buat akun** → otomatis berstatus *Calon Member*.
+2. **Isi silsilah**: pilih *leluhur terdekat yang sudah tercatat* (mulai Sundut 10, karena
+   Generasi 1–10 sudah diisi Ketua Adat), lalu isi generasi di antaranya sampai ayah,
+   lalu data diri dan domisili. Sundut pendaftar dihitung otomatis.
+   Bila namanya sudah ada di silsilah, cukup ajukan **"Ini saya"**.
+3. **Kesaksian keluarga**: member terverifikasi yang satu pomparan dengan pendaftar
+   (bertemu paling jauh 3 sundut di atas leluhur yang dipilih) menyatakan *benar* atau
+   *tidak benar*, beserta catatan.
+4. **Keputusan admin**: Admin Wilayah (sesuai domisili atau cabang pendaftar) atau
+   Admin Marga menyetujui/menolak (penolakan wajib beralasan) dengan melihat jumlah
+   dan isi kesaksian. Bila disetujui, generasi antara dan pendaftar dibuat, akun
+   ditautkan, dan role naik menjadi Member.
+
+## 4A. Partuturan
+- Sistem menghitung cara memanggil antara dua anggota dari pohon: cari titik temu
+  (leluhur bersama terdekat), jarak sundut, jenis kelamin, dan apakah salah satunya
+  turun lewat boru.
+- **Haha–anggi dan amangtua–amanguda ditentukan dari garis yang lebih sulung** di titik
+  temu (urutan anak), bukan dari umur.
+- Pasangan (istri/suami dari marga lain) dipanggil sesuai panggilan kepada pasangannya
+  (mis. istri tulang → nantulang, suami namboru → amangboru, istri anak → parumaen).
+- Istilah disimpan di tabel `partuturan` dan **dapat disesuaikan Ketua Adat**; aturan
+  penentuannya ada di `app/Services/PartuturanService.php` dan diuji di
+  `tests/database/PartuturanTest.php`.
+
+## 4B. Kanal Informasi
+- **Berita**: kategori berita, pengumuman, sukacita, dukacita; status draf/terbit.
+- **Kegiatan**: pesta adat, bona taon, partangiangan, arisan/punguan, rapat, sosial, dll.
+  dengan waktu, tempat, kab/kota, tautan peta, dan narahubung.
+- Isi ditulis sebagai teks sederhana (paragraf, `**tebal**`, `*miring*`, `- daftar`,
+  `[teks](https://…)`); HTML dari pengguna tidak pernah dijalankan.
+- Gambar diubah ulang ke JPEG oleh server sebelum disimpan.
+
 ## 5. Hak Lihat (Privasi)
 
 | Informasi                                   | Publik | Member login | Admin/Ketua Adat |
 |---------------------------------------------|:------:|:------------:|:----------------:|
-| Pohon silsilah umum (nama, generasi, garis) |   ✔    |      ✔       |        ✔         |
-| Halaman silsilah/profil per anggota         |   ✘    |      ✔       |        ✔         |
+| Pohon silsilah umum (nama, generasi, garis), berita, kegiatan, kamus partuturan |   ✔    |      ✔       |        ✔         |
+| Halaman profil per anggota & partuturan     |   ✘    |  ✔ (member)  |        ✔         |
 | Tanggal lahir, alamat, kontak (masih hidup) |   ✘    |      ✔*      |        ✔         |
 | NIK / No. KK                                |   ✘    |      ✘       |   ✔ (terenkripsi)|
 
@@ -99,6 +136,10 @@ dan tidak pernah ditampilkan ke publik atau member lain.
 | `users`            | Akun login (Shield), dapat ditautkan ke satu `persons` |
 | `change_requests`  | Usulan tambah/ubah data dari member (status pending/disetujui/ditolak) |
 | `audit_logs`       | Riwayat semua perubahan |
+| `partuturan`       | Istilah tutur sapa yang dapat disesuaikan Ketua Adat |
+| `admin_lingkup`    | Lingkup Admin Wilayah (kode wilayah atau cabang leluhur) |
+| `konfirmasi_keluarga` | Kesaksian kerabat atas pendaftaran/usulan |
+| `berita`, `kegiatan` | Kanal informasi |
 | `wilayah`          | Referensi wilayah Indonesia (provinsi, kab/kota, kecamatan, desa) kode Kemendagri |
 
 ### 6.2 Strategi Pohon untuk Skala Besar
@@ -187,8 +228,11 @@ Field mengikuti data kependudukan Indonesia (KTP/KK) ditambah data adat.
 8. Pohon silsilah interaktif (publik: umum; login: detail per anggota).
 9. Daftar anggota per generasi dengan filter (generasi, garis, wilayah, status hidup) dan pencarian.
 
-**Fase berikutnya:** cek hubungan antar dua anggota, panggilan partuturan,
-peta sebaran, cetak tarombo PDF, notifikasi, API mobile.
+**Sudah ditambahkan (v2.0):** partuturan (cek hubungan + kamus), pendaftaran member
+berlapis (kesaksian keluarga + Admin Wilayah), berita & kegiatan, tema visual gorga.
+
+**Fase berikutnya:** peta sebaran, cetak tarombo PDF, notifikasi (email/WhatsApp),
+API mobile.
 
 ## 9. Standar Kode
 

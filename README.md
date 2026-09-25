@@ -31,7 +31,18 @@ php spark db:seed DatabaseSeeder
 php spark db:seed DemoSilsilahSeeder
 ```
 
-Seeder ini membuat sekitar 4.500 orang **fiktif** dalam 14 generasi, lengkap dengan boru, pasangan, dan anak boru. Juga dibuat akun demo `ketuaadat@`, `verifikator@`, dan `member@silsilah.local` dengan password `Demo#12345`. Ukurannya bisa diatur dengan `demo.generasi` dan `demo.maksPenerusPerGenerasi`.
+Seeder ini membuat sekitar 4.500 orang **fiktif** dalam 14 generasi, lengkap dengan boru, pasangan, dan anak boru, serta contoh berita, kegiatan, dan satu pendaftaran yang menunggu validasi.
+
+Akun demo (password `Demo#12345`), semuanya `@silsilah.local`:
+
+| Akun | Role |
+|---|---|
+| `ketuaadat@` | Ketua Adat |
+| `verifikator@` | Admin Marga |
+| `adminwilayah@` | Admin Wilayah (lingkup Sumatera Utara) |
+| `humas@` | Pengurus Informasi (berita & kegiatan) |
+| `member@` | Member (tertaut ke data Sundut 12) |
+| `calon@` | Calon Member dengan pendaftaran yang menunggu validasi | Ukurannya bisa diatur dengan `demo.generasi` dan `demo.maksPenerusPerGenerasi`.
 
 ## Menjalankan
 
@@ -41,17 +52,19 @@ php spark serve     # buka http://localhost:8080
 
 | Halaman | Akses |
 |---|---|
-| `/` Beranda, `/silsilah` Pohon, `/generasi` Daftar generasi | Publik (nama, generasi, garis saja) |
-| `/anggota/{id}` Profil, tambah anak/pasangan, ubah data, "Ini saya" | Wajib login |
-| `/admin/usulan` Verifikasi usulan, `/admin/import` Import Excel | Ketua Adat, Verifikator |
-| `/admin/leluhur-awal` Tetapkan Generasi 1 | Ketua Adat |
-| `/admin/marga`, `/admin/pengguna` | Super Admin |
+| `/` Beranda, `/silsilah` Pohon, `/generasi`, `/partuturan` Kamus, `/berita`, `/kegiatan` | Publik |
+| `/pendaftaran` Isi silsilah & status pendaftaran | Login (calon member) |
+| `/anggota/{id}` Profil + partuturan, `/hubungan` Cek partuturan, `/konfirmasi-keluarga` | Member terverifikasi |
+| `/admin/usulan` Pendaftaran & usulan, `/admin/import` | Ketua Adat, Admin Marga, Admin Wilayah (sesuai lingkup) |
+| `/admin/leluhur-awal`, `/admin/partuturan` | Ketua Adat |
+| `/admin/berita`, `/admin/kegiatan` | Pengurus Informasi, Admin Marga, Ketua Adat |
+| `/admin/marga`, `/admin/pengguna` (role & lingkup Admin Wilayah) | Super Admin |
 
 Member yang tidak berhak menyimpan langsung otomatis mengirim **usulan**. Usulan baru masuk silsilah setelah disetujui Verifikator, atau Ketua Adat untuk Silsilah Pokok.
 
 ### Aset frontend
 
-Bootstrap, Bootstrap Icons, dan D3 disimpan di `public/assets/vendor` (ikut di-commit), jadi server tidak butuh Node. Untuk memperbarui versinya:
+Bootstrap, Bootstrap Icons, D3, dan font (Playfair Display, Plus Jakarta Sans) disimpan di `public/assets/vendor` (ikut di-commit), jadi server tidak butuh Node. Untuk memperbarui versinya:
 
 ```bash
 npm install && npm run aset
@@ -80,7 +93,9 @@ vendor/bin/phpunit
 | `app/Services/PersonService.php` | Semua penambahan/perubahan data silsilah: aturan adat, closure table, hak akses, audit |
 | `app/Services/SilsilahQuery.php` | Jalur leluhur, keturunan, pohon (lazy load), profil, rekap generasi |
 | `app/Services/SilsilahPolicy.php` | Hak akses per role, marga, dan Silsilah Pokok |
-| `app/Services/UsulanService.php` | Usulan member → verifikasi (NIK dalam usulan ikut dienkripsi) |
+| `app/Services/PartuturanService.php` | Mesin partuturan: panggilan antar dua anggota + jalur silsilah |
+| `app/Services/UsulanService.php` | Pendaftaran, usulan, kesaksian keluarga, dan verifikasi |
+| `app/Services/LingkupAdmin.php` | Lingkup Admin Wilayah (wilayah/cabang pomparan) |
 | `app/Services/ImportService.php` | Import Excel/CSV, semua-atau-tidak-sama-sekali |
 | `public/assets/js/pohon.js` | Pohon interaktif D3 dengan lazy load per cabang |
 | `app/Services/DataPribadiCipher.php` | Enkripsi NIK/No. KK (UU PDP) |

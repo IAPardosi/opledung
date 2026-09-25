@@ -12,6 +12,7 @@ use App\Models\PersonModel;
 use App\Models\UserModel;
 use App\Models\WilayahModel;
 use App\Services\DataPribadiCipher;
+use App\Services\PartuturanService;
 use App\Services\PersonService;
 use App\Services\SilsilahPolicy;
 use App\Services\SilsilahQuery;
@@ -62,16 +63,22 @@ class Anggota extends BaseController
             }
         }
 
+        $tutur = $user->person_id !== null && ! $diri
+            ? (new PartuturanService())->hubungan((int) $user->person_id, $p->id)
+            : null;
+
         return view('anggota/profil', [
             ...$profil,
+            'tutur'         => $tutur,
+            'saya'          => $tutur !== null ? (new PersonModel())->find((int) $user->person_id) : null,
             'diri'          => $diri,
             'lihatKontak'   => ! $p->isHidup() || ! $p->sembunyikan_kontak || $diri || $sensitif,
             'nik'           => $cipher ? DataPribadiCipher::samarkan($cipher->dekripsi($p->nik_enc)) : null,
             'noKk'          => $cipher ? DataPribadiCipher::samarkan($cipher->dekripsi($p->no_kk_enc)) : null,
             'lihatSensitif' => $sensitif,
             'wilayah'       => $this->namaWilayah($p),
-            'kelola'        => $this->policy->bolehKelolaGenerasi($user, $p->marga_id, $p->generasi_ke),
-            'kelolaAnak'    => $this->policy->bolehKelolaGenerasi($user, $p->marga_id, $p->generasi_ke + 1),
+            'kelola'        => $this->policy->bolehKelolaGenerasi($user, $p->marga_id, $p->generasi_ke, $p),
+            'kelolaAnak'    => $this->policy->bolehKelolaGenerasi($user, $p->marga_id, $p->generasi_ke + 1, $p),
             'ubahLangsung'  => $this->policy->bolehUbahProfil($user, $p),
             'bolehValidasi' => $this->policy->bolehValidasi($user, $p) && ! $p->isTerkunci() && $user->can('silsilah.verify', 'silsilah.pokok'),
             'bolehUsul'     => $user->can('silsilah.propose') && (int) $user->marga_id === $p->marga_id,
@@ -111,7 +118,7 @@ class Anggota extends BaseController
             return redirect()->to('anggota/' . $id)->with('galat', 'Keturunan dari anak boru dan pasangan tidak diteruskan dalam silsilah marga.');
         }
 
-        $langsung = $this->policy->bolehKelolaGenerasi($this->user(), $induk->marga_id, $induk->generasi_ke + 1);
+        $langsung = $this->policy->bolehKelolaGenerasi($this->user(), $induk->marga_id, $induk->generasi_ke + 1, $induk);
 
         if ($this->request->is('post')) {
             $data = $this->dataForm();
@@ -145,7 +152,7 @@ class Anggota extends BaseController
             return redirect()->to('anggota/' . $id)->with('galat', 'Pasangan hanya dapat ditambahkan untuk anggota garis utama atau boru.');
         }
 
-        $langsung = $this->policy->bolehKelolaGenerasi($this->user(), $person->marga_id, $person->generasi_ke);
+        $langsung = $this->policy->bolehKelolaGenerasi($this->user(), $person->marga_id, $person->generasi_ke, $person);
 
         if ($this->request->is('post')) {
             $data       = $this->dataForm();

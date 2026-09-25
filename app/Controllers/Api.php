@@ -50,6 +50,18 @@ class Api extends BaseController
 
     public function wilayah(): ResponseInterface
     {
+        // Semua kab/kota beserta provinsinya (untuk satu pilihan berkelompok).
+        if ($this->request->getGet('tingkat') === '2') {
+            $rows = (new WilayahModel())
+                ->select('wilayah.kode, wilayah.nama, prov.nama AS provinsi')
+                ->join('wilayah prov', 'prov.kode = wilayah.induk_kode')
+                ->where('wilayah.tingkat', WilayahModel::KABUPATEN)
+                ->orderBy('prov.nama')->orderBy('wilayah.nama')
+                ->findAll();
+
+            return $this->response->setHeader('Cache-Control', 'public, max-age=86400')->setJSON($rows);
+        }
+
         $induk = $this->request->getGet('induk');
         $induk = is_string($induk) && preg_match('/^[0-9.]{2,13}$/', $induk) ? $induk : null;
 
