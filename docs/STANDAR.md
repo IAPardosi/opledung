@@ -3,7 +3,7 @@
 Dokumen ini adalah acuan resmi pengembangan fase pertama. Setiap perubahan
 standar harus diperbarui di dokumen ini terlebih dahulu sebelum diterapkan di kode.
 
-Versi: 1.0 · Status: Disepakati untuk Fase 1
+Versi: 1.1 · Status: Disepakati untuk Fase 1
 
 ---
 
@@ -47,7 +47,7 @@ Versi: 1.0 · Status: Disepakati untuk Fase 1
   - anak-anaknya (nama saja/data singkat).
 - **Anak dari boru tidak diproses lebih lanjut**: tidak bisa ditambahkan anak/cucu
   di bawahnya dan tidak masuk hitungan generasi marga. Di sistem ditandai
-  `garis = 'boru'` sebagai ujung cabang.
+  `garis = 'anak_boru'` sebagai ujung cabang.
 - Istri dari anggota laki-laki (dari marga lain) dicatat sebagai pasangan,
   bukan sebagai anggota garis marga.
 
@@ -113,6 +113,8 @@ dan tidak pernah ditampilkan ke publik atau member lain.
 - Setiap orang memiliki **kode unik** otomatis: `{KODE_MARGA}-G{generasi 2 digit}-{nomor urut 6 digit}`,
   contoh `PDS-G12-000345`.
 - Identitas selalu memakai kode/ID, **tidak pernah memakai nama** (nama sama sangat mungkin).
+- Pasangan (istri/suami dari marga lain) memakai nomor generasi pasangannya di kodenya.
+- Nomor urut tidak pernah dipakai ulang, termasuk setelah data dihapus.
 
 ## 7. Standar Profil Anggota (Data Warga Indonesia)
 
@@ -124,7 +126,7 @@ Field mengikuti data kependudukan Indonesia (KTP/KK) ditambah data adat.
 | kode_anggota       | Otomatis   | ✔ |
 | marga              | Pilihan    | ✔ |
 | generasi_ke        | Otomatis dari ayah (G1 oleh Ketua Adat) | ✔ |
-| garis              | `utama` / `boru` / `pasangan` | ✔ |
+| garis              | `utama` / `boru` / `anak_boru` / `pasangan` (otomatis) | ✔ |
 | kode_ayah          | Kode anggota ayah | ✔ (kecuali G1) |
 | nama_ibu / kode_ibu| Nama ibu atau tautan ke data ibu | – |
 | urutan_anak        | Anak ke-berapa | – |

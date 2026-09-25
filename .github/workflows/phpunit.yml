@@ -1,0 +1,57 @@
+name: PHPUnit
+
+on:
+  push:
+    branches: [main, 'claude/**', 'fitur/**', 'perbaikan/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (PHP ${{ matrix.php-versions }})
+    runs-on: ubuntu-24.04
+
+    strategy:
+      matrix:
+        php-versions: ['8.2', '8.4']
+
+    services:
+      mysql:
+        image: mariadb:10.11
+        env:
+          MARIADB_DATABASE: silsilah_test
+          MARIADB_USER: silsilah
+          MARIADB_PASSWORD: silsilah
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: intl, mbstring, mysqli, sodium, zip, gd
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-progress --no-interaction
+
+      - name: Test with phpunit
+        run: vendor/bin/phpunit --no-coverage
+        env:
+          CI_ENVIRONMENT: testing
+          encryption.key: hex2bin:0000000000000000000000000000000000000000000000000000000000000001
+          database.tests.hostname: 127.0.0.1
+          database.tests.database: silsilah_test
+          database.tests.username: silsilah
+          database.tests.password: silsilah
+          database.tests.DBDriver: MySQLi
+          database.tests.DBPrefix: ''
+          database.tests.port: 3306
