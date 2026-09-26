@@ -14,8 +14,8 @@ const salin = [
 
 // Font: hanya subset latin woff2 (cukup untuk Bahasa Indonesia dan Batak).
 const font = [
-    ['Playfair Display', 'playfair-display', [700, 800]],
-    ['Plus Jakarta Sans', 'plus-jakarta-sans', [400, 500, 600, 700]],
+    ['Bricolage Grotesque', 'bricolage-grotesque', [600, 700, 800]],
+    ['Figtree', 'figtree', [400, 500, 600, 700]],
 ];
 let css = '/* Dibuat oleh scripts/salin-aset.mjs */\n';
 for (const [nama, paket, bobot] of font) {

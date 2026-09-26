@@ -37,12 +37,13 @@ Akun demo (password `Demo#12345`), semuanya `@silsilah.local`:
 
 | Akun | Role |
 |---|---|
-| `ketuaadat@` | Ketua Adat |
+| `ketuaadat@` | Ketua Adat (Silsilah Pokok, partuturan, sejarah marga) |
 | `verifikator@` | Admin Marga |
-| `adminwilayah@` | Admin Wilayah (lingkup Sumatera Utara) |
+| `penatua@` | Penatua Punguan Medan (lapis 2) |
 | `humas@` | Pengurus Informasi (berita & kegiatan) |
-| `member@` | Member (tertaut ke data Sundut 12) |
-| `calon@` | Calon Member dengan pendaftaran yang menunggu validasi | Ukurannya bisa diatur dengan `demo.generasi` dan `demo.maksPenerusPerGenerasi`.
+| `amang@` | Member, ayah dari `member@`; validator keluarga untuk pendaftaran `calon@` |
+| `member@` | Member (Sundut 12) |
+| `calon@` | Calon member dengan pendaftaran keluarga yang menunggu validasi |
 
 ## Menjalankan
 
@@ -52,19 +53,19 @@ php spark serve     # buka http://localhost:8080
 
 | Halaman | Akses |
 |---|---|
-| `/` Beranda, `/silsilah` Pohon, `/generasi`, `/partuturan` Kamus, `/berita`, `/kegiatan` | Publik |
-| `/pendaftaran` Isi silsilah & status pendaftaran | Login (calon member) |
-| `/anggota/{id}` Profil + partuturan, `/hubungan` Cek partuturan, `/konfirmasi-keluarga` | Member terverifikasi |
-| `/admin/usulan` Pendaftaran & usulan, `/admin/import` | Ketua Adat, Admin Marga, Admin Wilayah (sesuai lingkup) |
-| `/admin/leluhur-awal`, `/admin/partuturan` | Ketua Adat |
-| `/admin/berita`, `/admin/kegiatan` | Pengurus Informasi, Admin Marga, Ketua Adat |
-| `/admin/marga`, `/admin/pengguna` (role & lingkup Admin Wilayah) | Super Admin |
+| `/`, `/kenali-marga`, `/silsilah`, `/generasi`, `/partuturan`, `/berita`, `/kegiatan`, `/punguan` | Publik |
+| `/pendaftaran` Daftarkan keluarga, status, "Ini saya" | Login (calon member) |
+| `/garis` Jalur saya, `/keluarga-dekat`, `/anggota/{id}`, `/hubungan`, `/konfirmasi-keluarga` | Member |
+| `/admin/usulan`, `/admin/import` | Ketua Adat, Admin Marga, Penatua Punguan, Admin Wilayah (sesuai lingkup) |
+| `/admin/leluhur-awal`, `/admin/partuturan`, `/admin/sejarah` | Ketua Adat |
+| `/admin/berita`, `/admin/kegiatan` | Pengurus Informasi, Admin Marga, Ketua Adat, Penatua |
+| `/admin/marga`, `/admin/punguan`, `/admin/pengguna` | Super Admin |
 
-Member yang tidak berhak menyimpan langsung otomatis mengirim **usulan**. Usulan baru masuk silsilah setelah disetujui Verifikator, atau Ketua Adat untuk Silsilah Pokok.
+Alur pendaftaran: kepala keluarga mendaftarkan diri, istri, dan anak → **validator keluarga** (ayah/ompung atau anak/pahompu yang sudah member) membenarkan → **penatua punguan** mengesahkan. Lihat `docs/STANDAR.md` bagian 4.2.
 
 ### Aset frontend
 
-Bootstrap, Bootstrap Icons, D3, dan font (Playfair Display, Plus Jakarta Sans) disimpan di `public/assets/vendor` (ikut di-commit), jadi server tidak butuh Node. Untuk memperbarui versinya:
+Bootstrap, Bootstrap Icons, D3, dan font (Bricolage Grotesque, Figtree) disimpan di `public/assets/vendor` (ikut di-commit), jadi server tidak butuh Node. Untuk memperbarui versinya:
 
 ```bash
 npm install && npm run aset

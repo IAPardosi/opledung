@@ -19,6 +19,7 @@ class DemoKontenSeeder extends Seeder
         }
 
         $margaId = (int) $this->db->table('marga')->where('kode', 'PDS')->get()->getRow()->id;
+        $medan   = $this->db->table('punguan')->where('slug', 'medan')->get()->getRow();
         $konten  = new KontenService();
 
         $berita = [
@@ -58,6 +59,7 @@ class DemoKontenSeeder extends Seeder
         foreach ($kegiatan as [$jenis, $judul, $waktu, $lokasi, $kab, $deskripsi]) {
             $this->db->table('kegiatan')->insert([
                 'marga_id'       => $margaId,
+                'punguan_id'     => $kab === '12.71' && $medan ? $medan->id : null,
                 'jenis'          => $jenis,
                 'judul'          => $judul,
                 'slug'           => $konten->slugUnik('kegiatan', $judul),

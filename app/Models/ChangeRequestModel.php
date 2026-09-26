@@ -13,7 +13,8 @@ class ChangeRequestModel extends Model
     protected $returnType    = 'array';
     protected $useTimestamps = true;
     protected $allowedFields = [
-        'marga_id', 'user_id', 'person_id', 'kabupaten_kode', 'jenis', 'payload', 'status',
+        'marga_id', 'user_id', 'person_id', 'kabupaten_kode', 'punguan_id', 'validator_user_id', 'status_keluarga',
+        'catatan_keluarga', 'keluarga_at', 'jenis', 'payload', 'status',
         'catatan_pengusul', 'catatan_verifikator', 'hasil_person_id', 'reviewed_by', 'reviewed_at',
     ];
     protected array $casts = [

@@ -184,4 +184,69 @@ class SilsilahQuery
 
         return array_map(static fn (array $r): array => array_map('intval', $r), $rows);
     }
+
+    /**
+     * Keluarga dekat di sekitar seseorang: 2 sundut ke atas, sesundut, dan 2 sundut ke bawah.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function keluargaDekat(int $personId): ?array
+    {
+        $p = $this->persons->find($personId);
+        if ($p === null) {
+            return null;
+        }
+
+        $orangTua = $p->induk_id ? $this->persons->find($p->induk_id) : null;
+        $ompung   = $orangTua?->induk_id ? $this->persons->find($orangTua->induk_id) : null;
+        $anak     = $this->persons->anak($p->id);
+        $pahompu  = [];
+        foreach ($anak as $a) {
+            foreach ($this->persons->anak($a->id) as $c) {
+                $pahompu[] = $c;
+            }
+        }
+
+        return [
+            'person'          => $p,
+            'ompung'          => $ompung,
+            'ompungPasangan'  => $ompung ? $this->pasangan($ompung->id) : [],
+            'orangTua'        => $orangTua,
+            'orangTuaPasangan'=> $orangTua ? $this->pasangan($orangTua->id) : [],
+            'saudaraOrangTua' => $orangTua ? $this->persons->saudaraKandung($orangTua) : [],
+            'saudara'         => $this->persons->saudaraKandung($p),
+            'pasangan'        => $this->pasangan($p->id),
+            'anak'            => $anak,
+            'pahompu'         => array_slice($pahompu, 0, 40),
+            'jumlahPahompu'   => count($pahompu),
+        ];
+    }
+
+    /**
+     * Jumlah saudara kandung setiap orang di jalur (untuk tampilan "Jalur saya").
+     *
+     * @param list<Person> $jalur
+     *
+     * @return array<int, int> person id => jumlah saudara
+     */
+    public function jumlahSaudara(array $jalur): array
+    {
+        $induk = array_values(array_filter(array_map(static fn (Person $p): ?int => $p->induk_id, $jalur)));
+        if ($induk === []) {
+            return [];
+        }
+
+        $jumlah = array_column(
+            $this->db->table('persons')->select('induk_id, COUNT(*) AS n')->whereIn('induk_id', $induk)->where('deleted_at', null)->groupBy('induk_id')->get()->getResultArray(),
+            'n',
+            'induk_id',
+        );
+
+        $hasil = [];
+        foreach ($jalur as $p) {
+            $hasil[$p->id] = $p->induk_id ? max(0, (int) ($jumlah[$p->induk_id] ?? 1) - 1) : 0;
+        }
+
+        return $hasil;
+    }
 }

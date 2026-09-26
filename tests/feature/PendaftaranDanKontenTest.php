@@ -86,7 +86,7 @@ final class PendaftaranDanKontenTest extends CIUnitTestCase
 
         $usulan = $this->db->table('change_requests')->where('jenis', 'daftar_anggota')->get()->getRowArray();
         $this->assertSame('12.02', $usulan['kabupaten_kode']);
-        $this->actingAs($calon)->get('pendaftaran')->assertSee('Menunggu Validasi');
+        $this->actingAs($calon)->get('pendaftaran')->assertSee('sedang diproses');
 
         // Kerabat (abang, sudah member) memberi kesaksian.
         $abang = $this->akun('member', $this->p['Abang']->id);

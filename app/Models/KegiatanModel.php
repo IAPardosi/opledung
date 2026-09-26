@@ -14,7 +14,7 @@ class KegiatanModel extends Model
     protected $useSoftDeletes = true;
     protected $useTimestamps  = true;
     protected $allowedFields  = [
-        'marga_id', 'jenis', 'judul', 'slug', 'deskripsi', 'mulai', 'selesai', 'lokasi', 'alamat',
+        'marga_id', 'punguan_id', 'jenis', 'judul', 'slug', 'deskripsi', 'mulai', 'selesai', 'lokasi', 'alamat',
         'kabupaten_kode', 'peta_url', 'kontak', 'gambar', 'status', 'created_by', 'updated_by',
     ];
     protected $validationRules = [

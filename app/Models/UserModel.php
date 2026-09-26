@@ -19,6 +19,7 @@ class UserModel extends ShieldUserModel
             ...$this->allowedFields,
             'marga_id',
             'person_id',
+            'punguan_id',
         ];
     }
 }

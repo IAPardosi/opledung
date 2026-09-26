@@ -32,6 +32,10 @@ class AuthGroups extends ShieldAuthGroups
             'title'       => 'Admin Marga',
             'description' => 'Memverifikasi usulan dan pendaftaran di seluruh marganya.',
         ],
+        'penatua' => [
+            'title'       => 'Penatua Punguan',
+            'description' => 'Ketua/penatua punguan daerah (mis. Medan): mengesahkan pendaftaran keluarga di punguannya.',
+        ],
         'admin_wilayah' => [
             'title'       => 'Admin Wilayah',
             'description' => 'Memverifikasi pendaftaran dan usulan di wilayah atau cabang (pomparan) tertentu.',
@@ -90,7 +94,16 @@ class AuthGroups extends ShieldAuthGroups
             'data.sensitive',
             'konten.kelola',
         ],
-        // Hak edit/verifikasi admin wilayah dibatasi lingkupnya oleh App\Services\LingkupAdmin.
+        // Hak edit/verifikasi penatua dan admin wilayah dibatasi lingkupnya oleh App\Services\LingkupAdmin.
+        'penatua' => [
+            'admin.access',
+            'silsilah.edit',
+            'silsilah.verify',
+            'silsilah.propose',
+            'silsilah.view',
+            'data.sensitive',
+            'konten.kelola',
+        ],
         'admin_wilayah' => [
             'admin.access',
             'silsilah.edit',

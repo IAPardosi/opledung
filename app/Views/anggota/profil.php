@@ -75,10 +75,7 @@ $orangKecil = static function ($o, ?string $ket = null): string {
                     </form>
                 <?php endif ?>
                 <?php if ($bisaKlaim && ! $klaimPending) : ?>
-                    <form method="post" action="<?= site_url('anggota/' . $p->id . '/klaim') ?>" onsubmit="return confirm('Ajukan data ini sebagai profil Anda? Verifikator akan memeriksanya.')">
-                        <?= csrf_field() ?>
-                        <button class="btn btn-aksen btn-sm"><i class="bi bi-person-raised-hand"></i> Ini saya</button>
-                    </form>
+                    <a class="btn btn-utama btn-sm" href="<?= site_url('pendaftaran/klaim/' . $p->id) ?>"><i class="bi bi-person-raised-hand"></i> Ini saya</a>
                 <?php endif ?>
             </div>
         </div>

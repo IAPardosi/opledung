@@ -22,7 +22,8 @@ class Usulan extends BaseController
         $status = $this->request->getGet('status') ?: 'pending';
         $model  = new ChangeRequestModel();
 
-        $model->select('change_requests.*, persons.nama_lengkap, persons.kode_anggota, persons.generasi_ke, users.username')
+        $model->select('change_requests.*, persons.nama_lengkap, persons.kode_anggota, persons.generasi_ke, users.username, pg.nama AS nama_punguan')
+            ->join('punguan pg', 'pg.id = change_requests.punguan_id', 'left')
             ->join('persons', 'persons.id = change_requests.person_id', 'left')
             ->join('users', 'users.id = change_requests.user_id', 'left')
             ->orderBy('change_requests.id', $status === 'pending' ? 'ASC' : 'DESC');
@@ -48,8 +49,10 @@ class Usulan extends BaseController
     {
         $service = new UsulanService();
         $usulan  = (new ChangeRequestModel())
-            ->select('change_requests.*, users.username')
+            ->select('change_requests.*, users.username, v.username AS validator_username, pg.nama AS nama_punguan')
             ->join('users', 'users.id = change_requests.user_id', 'left')
+            ->join('users v', 'v.id = change_requests.validator_user_id', 'left')
+            ->join('punguan pg', 'pg.id = change_requests.punguan_id', 'left')
             ->find($id);
 
         if ($usulan === null || ! $service->bolehVerifikasi($this->user(), $usulan)) {
@@ -76,6 +79,17 @@ class Usulan extends BaseController
         }
 
         return redirect()->to('admin/usulan')->with('sukses', 'Usulan disetujui dan sudah masuk ke silsilah.');
+    }
+
+    public function lewatiKeluarga(int $id): RedirectResponse
+    {
+        try {
+            (new UsulanService())->lewatiValidasiKeluarga($id, $this->user(), (string) $this->request->getPost('alasan'));
+        } catch (SilsilahException $e) {
+            return redirect()->to('admin/usulan/' . $id)->with('galat', $e->getMessage());
+        }
+
+        return redirect()->to('admin/usulan/' . $id)->with('sukses', 'Validasi keluarga dilewati. Periksa data dengan teliti sebelum mengesahkan.');
     }
 
     public function tolak(int $id): RedirectResponse

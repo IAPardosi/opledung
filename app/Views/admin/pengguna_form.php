@@ -31,8 +31,22 @@
             <input class="form-control font-monospace" id="kode_anggota" name="kode_anggota" value="<?= esc(old('kode_anggota', $person?->kode_anggota ?? '')) ?>" placeholder="mis. PDS-G12-000345">
             <?php if ($person) : ?><div class="form-text">Saat ini: <a href="<?= site_url('anggota/' . $person->id) ?>"><?= esc($person->nama_lengkap) ?></a>. Kosongkan untuk melepas tautan.</div><?php endif ?>
         </div>
+        <div class="mb-3">
+            <label class="form-label" for="punguan_id">Punguan (keanggotaan)</label>
+            <select class="form-select" id="punguan_id" name="punguan_id">
+                <option value="">– Tidak ada –</option>
+                <?php foreach ($punguan as $pg) : ?><option value="<?= $pg['id'] ?>" <?= (int) ($akun->punguan_id ?? 0) === (int) $pg['id'] ? 'selected' : '' ?>><?= esc($pg['nama']) ?></option><?php endforeach ?>
+            </select>
+        </div>
+        <fieldset class="border rounded-4 p-3 mb-3">
+            <legend class="float-none w-auto px-2 fs-6 fw-semibold mb-0">Penatua punguan</legend>
+            <p class="small text-body-secondary">Untuk role Penatua Punguan: punguan yang pendaftarannya ia sahkan.</p>
+            <?php foreach ($punguan as $pg) : ?>
+                <div class="form-check"><input class="form-check-input" type="checkbox" name="lingkup_punguan[]" value="<?= $pg['id'] ?>" id="lp<?= $pg['id'] ?>" <?= in_array((string) $pg['id'], $punguanLingkup, true) ? 'checked' : '' ?>><label class="form-check-label" for="lp<?= $pg['id'] ?>"><?= esc($pg['nama']) ?></label></div>
+            <?php endforeach ?>
+        </fieldset>
         <fieldset class="border rounded-3 p-3 mb-3" id="lingkupAdmin" data-api="<?= site_url('api/wilayah') ?>">
-            <legend class="float-none w-auto px-2 fs-6 fw-semibold mb-0">Lingkup Admin Wilayah</legend>
+            <legend class="float-none w-auto px-2 fs-6 fw-semibold mb-0">Lingkup tambahan (wilayah / cabang)</legend>
             <p class="small text-body-secondary">Hanya untuk role Admin Wilayah. Admin memverifikasi pendaftaran dan usulan dari anggota yang tinggal di wilayahnya
                 <b>atau</b> yang termasuk pomparan (keturunan) leluhur cabang yang ia kenal.</p>
             <label class="form-label small" for="lingkup_wilayah">Kabupaten/kota</label>

@@ -89,12 +89,12 @@ class DemoSilsilahSeeder extends Seeder
         $mulai = microtime(true);
 
         $leluhur = $this->service->tambahLeluhurAwal((int) $marga['id'], [
-            'nama_lengkap'  => 'Pardosi (Contoh Leluhur)',
-            'gelar_adat'    => 'Op. Ledung (fiktif)',
+            'nama_lengkap'  => 'Op. Dongan',
+            'gelar_adat'    => null,
             'jenis_kelamin' => 'L',
             'tahun_lahir'   => $this->tahunG1,
             'status_hidup'  => 'meninggal',
-            'biografi'      => 'Data contoh. Leluhur awal sebenarnya ditetapkan oleh Ketua Adat.',
+            'biografi'      => 'Leluhur awal marga Pardosi (Sundut 1). Kisah lengkapnya dituliskan Ketua Adat; teks ini contoh.',
         ], null);
 
         $penerus = [$leluhur];
@@ -108,7 +108,14 @@ class DemoSilsilahSeeder extends Seeder
                 $jumlahAnak = mt_rand(1, 5);
                 for ($i = 0; $i < $jumlahAnak; $i++) {
                     $jk   = ($i === 0 || mt_rand(0, 1) === 1) ? 'L' : 'P';
-                    $anak = $this->service->tambahAnak($ayah->id, [...$this->dataOrang($jk, $g), 'pasangan_id' => $istri->id], null);
+                    $data = $this->dataOrang($jk, $g);
+                    // Garis awal sesuai contoh: Op. Dongan → Op. Ledung → Paedang.
+                    if ($i === 0 && $g === 2) {
+                        $data = [...$data, 'nama_lengkap' => 'Op. Ledung', 'biografi' => 'Sundut 2, anak sulung Op. Dongan (teks contoh).'];
+                    } elseif ($i === 0 && $g === 3 && $ayah->nama_lengkap === 'Op. Ledung') {
+                        $data = [...$data, 'nama_lengkap' => 'Paedang', 'biografi' => 'Sundut 3, anak sulung Op. Ledung (teks contoh).'];
+                    }
+                    $anak = $this->service->tambahAnak($ayah->id, [...$data, 'pasangan_id' => $istri->id], null);
 
                     if ($jk === 'L') {
                         $berikut[] = $anak;
@@ -131,6 +138,17 @@ class DemoSilsilahSeeder extends Seeder
             ->where('marga_id', $marga['id'])
             ->where('generasi_ke <=', $marga['batas_silsilah_pokok'])
             ->update(['status_data' => 'terkunci']);
+
+        $this->db->table('marga')->where('id', $marga['id'])->update([
+            'asal_kampung' => '[Nama huta/bona pasogit] (contoh)',
+            'sejarah'      => "Teks ini contoh. Ketua Adat menuliskan kisah marga Pardosi di sini: asal-usul, bona pasogit, tugu, dan pesan para leluhur.\n\nSetiap pomparan dapat menelusuri jalurnya dari Op. Dongan sampai sundut sekarang.",
+            'pra_marga'    => json_encode([
+                ['nama' => '[Leluhur sebelum marga 1]', 'keterangan' => 'Contoh: diisi Ketua Adat'],
+                ['nama' => '[Leluhur sebelum marga 2]', 'keterangan' => ''],
+                ['nama' => '[Leluhur sebelum marga 3]', 'keterangan' => ''],
+                ['nama' => '[Leluhur sebelum marga 4]', 'keterangan' => ''],
+            ], JSON_UNESCAPED_UNICODE),
+        ]);
 
         $this->buatAkunDemo((int) $marga['id'], $contohMember);
         $this->call(DemoKontenSeeder::class);
@@ -209,12 +227,16 @@ class DemoSilsilahSeeder extends Seeder
      */
     private function buatAkunDemo(int $margaId, ?Person $member): void
     {
-        $users = new UserModel();
-        $akun  = [
+        $users   = new UserModel();
+        $medan   = $this->db->table('punguan')->where('slug', 'medan')->get()->getRow();
+        $medanId = $medan !== null ? (int) $medan->id : null;
+        $ayahId  = $member?->induk_id;
+        $akun    = [
             ['ketuaadat', 'ketuaadat@silsilah.local', 'ketua_adat', null],
             ['verifikator', 'verifikator@silsilah.local', 'verifikator', null],
-            ['adminwilayah', 'adminwilayah@silsilah.local', 'admin_wilayah', null],
+            ['penatua', 'penatua@silsilah.local', 'penatua', null],
             ['humas', 'humas@silsilah.local', 'humas', null],
+            ['amang', 'amang@silsilah.local', 'member', $ayahId],
             ['member', 'member@silsilah.local', 'member', $member?->id],
             ['calon', 'calon@silsilah.local', 'calon', null],
         ];
@@ -224,33 +246,48 @@ class DemoSilsilahSeeder extends Seeder
                 continue;
             }
             $users->save(new User([
-                'username'  => $username,
-                'email'     => $email,
-                'password'  => 'Demo#12345',
-                'marga_id'  => $margaId,
-                'person_id' => $personId,
+                'username'   => $username,
+                'email'      => $email,
+                'password'   => 'Demo#12345',
+                'marga_id'   => $margaId,
+                'person_id'  => $personId,
+                'punguan_id' => $medanId,
             ]));
             $user = $users->findById($users->getInsertID());
             $user->activate();
             $user->syncGroups($group);
 
-            if ($group === 'admin_wilayah') {
-                (new LingkupAdmin())->simpan($user->id, [['jenis' => 'wilayah', 'nilai' => '12']]);
+            if ($group === 'penatua' && $medanId !== null) {
+                (new LingkupAdmin())->simpan($user->id, [['jenis' => 'punguan', 'nilai' => (string) $medanId]]);
             }
-            if ($group === 'calon' && $member !== null && $member->induk_id !== null) {
-                // Pendaftaran menunggu validasi: sepupu member (cucu dari ompung member,
-                // melalui amanguda yang belum tercatat).
-                $ompung = $this->service->ambil($this->service->ambil($member->induk_id)->induk_id);
-                (new UsulanService())->ajukanPendaftaran($user, $ompung, [['nama_lengkap' => 'Marihot Pardosi (contoh)', 'tahun_lahir' => 1968, 'status_hidup' => 'hidup']], [
-                    'nama_lengkap'   => 'Calon Pardosi (contoh)',
-                    'jenis_kelamin'  => 'L',
-                    'tanggal_lahir'  => '1996-03-14',
-                    'kabupaten_kode' => '12.02',
-                    'no_hp'          => '081200001111',
-                ], 'Kerabat yang mengenal saya: member (contoh).');
+            if ($group === 'calon' && $ayahId !== null) {
+                // Adik member mendaftarkan keluarganya; validator keluarga: ayahnya (akun "amang").
+                $amang = $users->findByCredentials(['email' => 'amang@silsilah.local']);
+                (new UsulanService())->ajukanPendaftaran(
+                    $user,
+                    $this->service->ambil($ayahId),
+                    [],
+                    [
+                        'nama_lengkap'   => 'Calon Pardosi (contoh)',
+                        'jenis_kelamin'  => 'L',
+                        'tanggal_lahir'  => '1968-03-14',
+                        'kabupaten_kode' => '12.71',
+                        'no_hp'          => '081200001111',
+                    ],
+                    'Adik kandung member (contoh).',
+                    [
+                        'istri' => ['nama_lengkap' => 'Rotua br. Sinaga (contoh)', 'marga_nama' => 'Sinaga', 'tahun_lahir' => 1971],
+                        'anak'  => [
+                            ['nama_lengkap' => 'Yosua Pardosi (contoh)', 'jenis_kelamin' => 'L', 'tahun_lahir' => 1995],
+                            ['nama_lengkap' => 'Grace br. Pardosi (contoh)', 'jenis_kelamin' => 'P', 'tahun_lahir' => 1998],
+                        ],
+                    ],
+                    $medanId,
+                    $amang?->id,
+                );
             }
         }
 
-        echo '  Akun demo (password Demo#12345): ketuaadat@, verifikator@, adminwilayah@, humas@, member@, calon@silsilah.local' . PHP_EOL;
+        echo '  Akun demo (password Demo#12345): ketuaadat@, verifikator@, penatua@, humas@, amang@, member@, calon@silsilah.local' . PHP_EOL;
     }
 }

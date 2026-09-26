@@ -90,15 +90,21 @@ class Pengguna extends BaseController
                 }
                 $lingkup[] = ['jenis' => 'cabang', 'nilai' => (string) $cabang->id];
             }
-            if ($grup === 'admin_wilayah' && $lingkup === []) {
-                return redirect()->back()->withInput()->with('galat', 'Admin Wilayah wajib diberi minimal satu wilayah atau cabang.');
+            foreach ((array) $this->request->getPost('lingkup_punguan') as $pid) {
+                if (is_numeric($pid)) {
+                    $lingkup[] = ['jenis' => 'punguan', 'nilai' => (string) (int) $pid];
+                }
             }
+            if (in_array($grup, ['admin_wilayah', 'penatua'], true) && $lingkup === []) {
+                return redirect()->back()->withInput()->with('galat', 'Penatua Punguan dan Admin Wilayah wajib diberi minimal satu punguan, wilayah, atau cabang.');
+            }
+            $punguanId = $this->request->getPost('punguan_id') ?: null;
 
             $lama = ['grup' => $user->getGroups(), 'marga_id' => $user->marga_id, 'person_id' => $user->person_id, 'active' => $user->active];
             $baru = ['grup' => [$grup], 'marga_id' => $margaId, 'person_id' => $personId, 'active' => (bool) $this->request->getPost('active')];
 
-            $users->update($user->id, ['marga_id' => $margaId, 'person_id' => $personId]);
-            (new LingkupAdmin())->simpan($user->id, $grup === 'admin_wilayah' ? $lingkup : []);
+            $users->update($user->id, ['marga_id' => $margaId, 'person_id' => $personId, 'punguan_id' => $punguanId]);
+            (new LingkupAdmin())->simpan($user->id, in_array($grup, ['admin_wilayah', 'penatua'], true) ? $lingkup : []);
             $baru['lingkup'] = $lingkup;
             $user->syncGroups($grup);
             $baru['active'] ? $user->activate() : $user->deactivate();
@@ -112,6 +118,8 @@ class Pengguna extends BaseController
         $cabangIds = array_map('intval', array_column(array_filter($lingkup, static fn ($l) => $l['jenis'] === 'cabang'), 'nilai'));
 
         return view('admin/pengguna_form', [
+            'punguan'         => (new \App\Models\PunguanModel())->findAll(),
+            'punguanLingkup'  => array_column(array_filter($lingkup, static fn ($l) => $l['jenis'] === 'punguan'), 'nilai'),
             'wilayahTerpilih' => array_column(array_filter($lingkup, static fn ($l) => $l['jenis'] === 'wilayah'), 'nilai'),
             'cabang'          => $cabangIds === [] ? [] : (new PersonModel())->whereIn('id', $cabangIds)->findAll(),
             'akun'   => $user,

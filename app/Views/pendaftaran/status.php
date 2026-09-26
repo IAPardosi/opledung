@@ -3,39 +3,49 @@
 <?= $this->section('title') ?>Status Pendaftaran<?= $this->endSection() ?>
 
 <?= $this->section('main') ?>
-<div class="container" style="max-width: 820px">
-    <p class="eyebrow mb-1">Pendaftaran member</p>
-    <div class="judul-bagian"><h1 class="h2">Menunggu Validasi</h1></div>
+<?php
+$antara = $usulan['payload']['antara'] ?? [];
+$istri  = $usulan['payload']['istri'] ?? null;
+$anak   = $usulan['payload']['anak'] ?? [];
+?>
+<div class="container" style="max-width: 880px">
+    <p class="eyebrow mb-1"><?= esc(UsulanService::JENIS[$usulan['jenis']]) ?> · diajukan <?= esc(tanggal_indo($usulan['created_at'])) ?></p>
+    <h1 class="h2 mb-3">Pendaftaran Anda sedang diproses</h1>
+    <div class="mb-4"><?= view('partials/tahap_validasi', ['usulan' => $usulan]) ?></div>
 
-    <div class="tutur mb-4"><div class="ipon-kecil"></div><div class="isi">
-        <div class="label"><?= esc(UsulanService::JENIS[$usulan['jenis']]) ?> · diajukan <?= esc(tanggal_indo($usulan['created_at'])) ?></div>
-        <div class="sebutan" style="font-size:1.6rem"><?= esc($usulan['jenis'] === 'klaim_profil' ? $leluhur?->nama_lengkap : ($data['nama_lengkap'] ?? '')) ?></div>
-        <?php if ($usulan['jenis'] === 'daftar_anggota' && $leluhur) : ?>
-            <div class="ket">Sundut <?= $leluhur->generasi_ke + count($usulan['payload']['antara'] ?? []) + 1 ?> · keturunan <?= esc($leluhur->nama_lengkap) ?> (Sundut <?= $leluhur->generasi_ke ?>)</div>
-            <div class="rantai mt-3">
-                <span class="simpul temu"><?= esc($leluhur->nama_lengkap) ?><small>Sundut <?= $leluhur->generasi_ke ?> · tercatat</small></span>
-                <?php foreach ($usulan['payload']['antara'] ?? [] as $i => $a) : ?>
-                    <i class="bi bi-chevron-right" style="color:#8f8079"></i><span class="simpul"><?= esc($a['nama_lengkap']) ?><small>Sundut <?= $leluhur->generasi_ke + $i + 1 ?> · baru</small></span>
-                <?php endforeach ?>
-                <i class="bi bi-chevron-right" style="color:#8f8079"></i><span class="simpul ujung"><?= esc($data['nama_lengkap'] ?? '') ?><small>Anda</small></span>
-            </div>
-        <?php endif ?>
-    </div></div>
-
-    <div class="row g-3">
-        <div class="col-md-6">
+    <div class="row g-4">
+        <div class="col-md-7">
             <div class="card card-body h-100">
-                <div class="fw-semibold mb-1"><i class="bi bi-people text-utama"></i> Kesaksian keluarga</div>
-                <div class="display-6 judul"><?= $kesaksian['benar'] ?> <span class="fs-6 text-teks-2">membenarkan</span></div>
-                <?php if ($kesaksian['salah'] > 0) : ?><div class="small text-danger"><?= $kesaksian['salah'] ?> kerabat menyatakan tidak benar.</div><?php endif ?>
-                <p class="small text-teks-2 mt-2 mb-0">Minta kerabat dekat Anda (ayah, saudara, tulang, atau ompung) yang sudah menjadi member untuk membuka menu <b>Kesaksian Keluarga</b> dan membenarkan data Anda.</p>
+                <div class="fw-bold mb-3"><?= $usulan['jenis'] === 'klaim_profil' ? 'Data yang Anda klaim' : 'Garis keturunan yang diajukan' ?></div>
+                <div class="linimasa">
+                    <?php if ($acuan) : ?>
+                        <div class="simpul"><span class="nomor"><?= $acuan->generasi_ke ?></span><div class="isi"><div class="nama"><?= esc($acuan->nama_lengkap) ?></div><div class="ket"><?= $usulan['jenis'] === 'klaim_profil' ? 'Data yang diklaim' : 'Sudah tercatat' ?></div></div></div>
+                    <?php endif ?>
+                    <?php foreach ($antara as $i => $a) : ?>
+                        <div class="sambung"></div>
+                        <div class="simpul"><span class="nomor lipat"><?= $acuan->generasi_ke + $i + 1 ?></span><div class="isi"><div class="nama"><?= esc($a['nama_lengkap']) ?></div><div class="ket">Baru</div></div></div>
+                    <?php endforeach ?>
+                    <?php if ($usulan['jenis'] === 'daftar_anggota') : ?>
+                        <div class="sambung merah"></div>
+                        <div class="simpul"><span class="nomor saya"><?= $acuan->generasi_ke + count($antara) + 1 ?></span><div class="isi"><div class="nama"><?= esc($data['nama_lengkap'] ?? '') ?></div><div class="ket">Anda<?= $istri ? ' · ' . esc($istri['nama_lengkap']) : '' ?><?= $anak ? ' · ' . count($anak) . ' anak' : '' ?></div></div></div>
+                    <?php endif ?>
+                </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card card-body h-100">
-                <div class="fw-semibold mb-1"><i class="bi bi-patch-check text-utama"></i> Validasi admin</div>
-                <p class="small text-teks-2 mb-0">Admin Wilayah untuk domisili atau cabang pomparan Anda akan memeriksa dan memutuskan. Setelah disetujui, akun Anda menjadi <b>member</b>
-                    dan dapat melihat profil serta partuturan keluarga.</p>
+        <div class="col-md-5 d-flex flex-column gap-3">
+            <div class="card card-body">
+                <div class="fw-bold mb-1"><i class="bi bi-people text-utama"></i> Validator keluarga</div>
+                <?php if ($validator) : ?>
+                    <p class="small mb-1"><b>@<?= esc($validator->username) ?></b> diminta memastikan data Anda.</p>
+                    <?php if (($usulan['status_keluarga'] ?? null) === 'menunggu') : ?><p class="small text-teks-2 mb-0">Hubungi beliau agar membuka menu <b>Validasi keluarga</b>.</p><?php endif ?>
+                    <?php if ($usulan['catatan_keluarga']) : ?><p class="small text-teks-2 mb-0">"<?= esc($usulan['catatan_keluarga']) ?>"</p><?php endif ?>
+                <?php else : ?>
+                    <p class="small text-teks-2 mb-0">Belum ada keluarga garis langsung yang menjadi member, jadi penatua punguan akan memeriksa lebih teliti.</p>
+                <?php endif ?>
+            </div>
+            <div class="card card-body">
+                <div class="fw-bold mb-1"><i class="bi bi-patch-check text-utama"></i> Pengesahan punguan</div>
+                <p class="small text-teks-2 mb-0">Setelah keluarga membenarkan, penatua punguan mengesahkan. Akun Anda lalu menjadi <b>member</b>.</p>
             </div>
         </div>
     </div>

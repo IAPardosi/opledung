@@ -3,9 +3,10 @@
 
 <?= $this->section('main') ?>
 <div class="container">
+    <div class="mb-3"><?= view('partials/mode_tampil', ['aktif' => 'sundut']) ?></div>
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
         <div>
-            <h1 class="h3 mb-0">Daftar Generasi</h1>
+            <h1 class="h3 mb-0">Per sundut</h1>
             <p class="text-body-secondary mb-0">Marga <?= esc($marga['nama']) ?><?= $generasi ? ' · Generasi ' . $generasi : '' ?></p>
         </div>
     </div>
@@ -17,11 +18,11 @@
                 <input type="search" class="form-control" id="q" name="q" value="<?= esc($cari) ?>" placeholder="mis. Hotman atau PDS-G12-000123">
             </div>
             <div class="col-6 col-md-3">
-                <label class="form-label small" for="g">Generasi</label>
+                <label class="form-label small" for="g">Sundut</label>
                 <select class="form-select" id="g" name="g">
-                    <option value="">Semua generasi</option>
+                    <option value="">Semua sundut</option>
                     <?php foreach ($rekap as $r) : ?>
-                        <option value="<?= $r['generasi_ke'] ?>" <?= $generasi === $r['generasi_ke'] ? 'selected' : '' ?>>Generasi <?= $r['generasi_ke'] ?> (<?= $r['utama'] + $r['boru'] ?>)</option>
+                        <option value="<?= $r['generasi_ke'] ?>" <?= $generasi === $r['generasi_ke'] ? 'selected' : '' ?>>Sundut <?= $r['generasi_ke'] ?> (<?= $r['utama'] + $r['boru'] ?>)</option>
                     <?php endforeach ?>
                 </select>
             </div>

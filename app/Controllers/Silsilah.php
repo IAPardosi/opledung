@@ -59,4 +59,71 @@ class Silsilah extends BaseController
             'cari'     => $cari,
         ]);
     }
+
+    /**
+     * Jalur saya: garis lurus dari leluhur sebelum marga dan Sundut 1 sampai orang ini.
+     */
+    public function garis(?int $id = null): string
+    {
+        $id ??= $this->user()?->person_id !== null ? (int) $this->user()->person_id : null;
+        if ($id === null) {
+            return view('silsilah/belum_tertaut', ['mode' => 'garis']);
+        }
+
+        $query  = new SilsilahQuery();
+        $jalur  = $query->jalurLeluhur($id);
+        $person = end($jalur) ?: null;
+        if ($person === null || $person->garis === 'pasangan') {
+            throw PageNotFoundException::forPageNotFound('Anggota tidak ditemukan.');
+        }
+
+        $marga = (new \App\Models\MargaModel())->find($person->marga_id);
+
+        return view('silsilah/garis', [
+            'person'  => $person,
+            'jalur'   => $jalur,
+            'saudara' => $query->jumlahSaudara($jalur),
+            'marga'   => $marga,
+            'praMarga'=> json_decode((string) ($marga['pra_marga'] ?? ''), true) ?: [],
+            'diri'    => $this->user()?->person_id !== null && (int) $this->user()->person_id === $person->id,
+        ]);
+    }
+
+    /**
+     * Keluarga dekat: orang ini di tengah, 2 sundut ke atas dan ke bawah.
+     */
+    public function keluargaDekat(?int $id = null): string
+    {
+        $user = $this->user();
+        $id ??= $user?->person_id !== null ? (int) $user->person_id : null;
+        if ($id === null) {
+            return view('silsilah/belum_tertaut', ['mode' => 'keluarga']);
+        }
+
+        $data = (new SilsilahQuery())->keluargaDekat($id);
+        if ($data === null) {
+            throw PageNotFoundException::forPageNotFound('Anggota tidak ditemukan.');
+        }
+
+        // Partuturan pengguna kepada setiap orang yang tampil.
+        $tutur = [];
+        if ($user?->person_id !== null) {
+            $mesin = new \App\Services\PartuturanService();
+            $orang = array_filter([
+                $data['ompung'], $data['orangTua'], $data['person'],
+                ...$data['saudaraOrangTua'], ...$data['saudara'], ...$data['anak'], ...$data['pahompu'],
+            ]);
+            foreach ([...$data['ompungPasangan'], ...$data['orangTuaPasangan'], ...$data['pasangan']] as $ps) {
+                $orang[] = (object) ['id' => (int) $ps['id']];
+            }
+            foreach ($orang as $o) {
+                if (! isset($tutur[$o->id]) && (int) $o->id !== (int) $user->person_id) {
+                    $h = $mesin->hubungan((int) $user->person_id, (int) $o->id);
+                    $tutur[$o->id] = $h['sebutan'] ?? null;
+                }
+            }
+        }
+
+        return view('silsilah/keluarga_dekat', [...$data, 'tutur' => $tutur, 'sayaId' => $user?->person_id !== null ? (int) $user->person_id : null]);
+    }
 }

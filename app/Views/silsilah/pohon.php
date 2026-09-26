@@ -3,9 +3,10 @@
 
 <?= $this->section('main') ?>
 <div class="container-fluid px-lg-4">
+    <div class="mb-3"><?= view('partials/mode_tampil', ['aktif' => 'pohon', 'id' => $akar?->id]) ?></div>
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
         <div>
-            <h1 class="h3 mb-1">Pohon Silsilah <?= esc($marga['nama']) ?></h1>
+            <h1 class="h3 mb-1">Pohon cabang <?= esc($marga['nama']) ?></h1>
             <?php if ($jalur !== []) : ?>
                 <nav class="jalur" aria-label="Jalur leluhur">
                     <?php foreach ($jalur as $i => $p) : ?>

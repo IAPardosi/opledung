@@ -141,6 +141,7 @@ class Anggota extends BaseController
             'person'   => null,
             'langsung' => $langsung,
             'pasangan' => (new SilsilahQuery())->pasangan($induk->id),
+            'kandidat' => $langsung ? [] : (new UsulanService())->kandidatValidator('tambah_anak', $induk),
             'aksi'     => site_url("anggota/{$id}/tambah-anak"),
         ]);
     }
@@ -180,6 +181,7 @@ class Anggota extends BaseController
             'person'   => null,
             'langsung' => $langsung,
             'pasangan' => [],
+            'kandidat' => $langsung ? [] : (new UsulanService())->kandidatValidator('tambah_pasangan', $person),
             'aksi'     => site_url("anggota/{$id}/tambah-pasangan"),
         ]);
     }
@@ -225,6 +227,7 @@ class Anggota extends BaseController
             'person'   => $person,
             'langsung' => $langsung,
             'pasangan' => [],
+            'kandidat' => $langsung ? [] : (new UsulanService())->kandidatValidator('ubah_data', $person),
             'aksi'     => site_url("anggota/{$id}/ubah"),
         ]);
     }
@@ -258,7 +261,7 @@ class Anggota extends BaseController
         $person = $this->ambil($id);
 
         try {
-            (new UsulanService())->ajukan($this->user(), 'klaim_profil', $person, [], $this->request->getPost('catatan'));
+            (new UsulanService())->ajukan($this->user(), 'klaim_profil', $person, [], $this->request->getPost('catatan'), $this->validatorDipilih());
         } catch (SilsilahException $e) {
             return redirect()->to('anggota/' . $id)->with('galat', $e->getMessage());
         }
@@ -279,6 +282,13 @@ class Anggota extends BaseController
             ->setHeader('Content-Type', mime_content_type($path) ?: 'image/jpeg')
             ->setHeader('Cache-Control', 'private, max-age=86400')
             ->setBody((string) file_get_contents($path));
+    }
+
+    private function validatorDipilih(): ?int
+    {
+        $v = $this->request->getPost('validator_user_id');
+
+        return is_numeric($v) ? (int) $v : null;
     }
 
     private function ambil(int $id): Person
@@ -316,7 +326,7 @@ class Anggota extends BaseController
                 return redirect()->to('anggota/' . $target->id)->with('info', 'Tidak ada perubahan data.');
             }
 
-            (new UsulanService())->ajukan($this->user(), $jenis, $target, $payload, $this->request->getPost('catatan_pengusul'));
+            (new UsulanService())->ajukan($this->user(), $jenis, $target, $payload, $this->request->getPost('catatan_pengusul'), $this->validatorDipilih());
 
             return redirect()->to('anggota/' . $target->id)->with('sukses', 'Usulan telah dikirim dan menunggu verifikasi.');
         } catch (ValidasiDataException $e) {

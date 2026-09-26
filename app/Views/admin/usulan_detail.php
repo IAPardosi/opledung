@@ -18,6 +18,28 @@ $lama = $target?->toRawArray() ?? [];
         <?= view('partials/status_usulan', ['status' => $usulan['status']]) ?>
     </div>
 
+    <div class="card card-body mb-3">
+        <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center">
+            <?= view('partials/tahap_validasi', ['usulan' => $usulan]) ?>
+            <span class="small text-body-secondary"><?= $usulan['nama_punguan'] ? 'Punguan: <b>' . esc($usulan['nama_punguan']) . '</b>' : 'Tanpa punguan' ?></span>
+        </div>
+        <div class="small mt-2">
+            <?php if ($usulan['validator_username']) : ?>
+                Validator keluarga: <b>@<?= esc($usulan['validator_username']) ?></b><?= $usulan['keluarga_at'] ? ' · ' . esc(tanggal_waktu_indo($usulan['keluarga_at'])) : '' ?>
+            <?php else : ?>
+                Tidak ada keluarga garis langsung yang menjadi member. Periksa lebih teliti, mis. dengan menghubungi kerabat yang disebut pengusul.
+            <?php endif ?>
+            <?php if ($usulan['catatan_keluarga']) : ?><div class="text-body-secondary mt-1">"<?= esc($usulan['catatan_keluarga']) ?>"</div><?php endif ?>
+        </div>
+        <?php if ($usulan['status'] === 'pending' && $usulan['status_keluarga'] === 'menunggu') : ?>
+            <form method="post" action="<?= site_url('admin/usulan/' . $usulan['id'] . '/lewati-keluarga') ?>" class="row g-2 mt-2">
+                <?= csrf_field() ?>
+                <div class="col-md"><input class="form-control form-control-sm" name="alasan" required maxlength="900" placeholder="Alasan melewati validasi keluarga (mis. validator sudah dihubungi lewat telepon)" aria-label="Alasan"></div>
+                <div class="col-auto"><button class="btn btn-sm btn-outline-secondary">Lewati validasi keluarga</button></div>
+            </form>
+        <?php endif ?>
+    </div>
+
     <?php if ($target) : ?>
     <div class="card card-body mb-3">
         <div class="small text-body-secondary mb-1"><?= match ($usulan['jenis']) {
@@ -43,7 +65,14 @@ $lama = $target?->toRawArray() ?? [];
                 <i class="bi bi-chevron-right text-body-secondary"></i>
                 <span class="simpul ujung"><?= esc($data['nama_lengkap'] ?? '') ?><small>Pendaftar · Sundut <?= $target->generasi_ke + count($antara) + 1 ?></small></span>
             </div>
-            <div class="small text-body-secondary mt-2">Bila disetujui, <?= count($antara) ?> generasi antara dan pendaftar dibuat, lalu akun ditautkan dan dinaikkan menjadi member.</div>
+            <?php $istri = $usulan['payload']['istri'] ?? null; $anak = $usulan['payload']['anak'] ?? []; ?>
+            <?php if ($istri || $anak) : ?>
+                <div class="small mt-3"><b>Keluarga:</b>
+                    <?= $istri ? 'Istri/suami ' . esc($istri['nama_lengkap']) . (! empty($istri['marga_nama']) ? ' (' . esc($istri['marga_nama']) . ')' : '') : '' ?>
+                    <?php if ($anak) : ?><?= $istri ? ' · ' : '' ?><?= count($anak) ?> anak: <?= esc(implode(', ', array_map(static fn ($a) => $a['nama_lengkap'] . ' (' . $a['jenis_kelamin'] . ')', $anak))) ?><?php endif ?>
+                </div>
+            <?php endif ?>
+            <div class="small text-body-secondary mt-2">Bila disahkan: <?= count($antara) ?> generasi antara, kepala keluarga<?= $istri ? ', pasangan' : '' ?><?= $anak ? ', dan ' . count($anak) . ' anak' : '' ?> dicatat; akun ditautkan dan menjadi member.</div>
         <?php endif ?>
     </div>
     <?php endif ?>
@@ -101,7 +130,9 @@ $lama = $target?->toRawArray() ?? [];
                 <?= csrf_field() ?>
                 <label class="form-label small" for="catatanSetuju">Catatan (opsional)</label>
                 <textarea class="form-control mb-2" id="catatanSetuju" name="catatan" rows="2"></textarea>
-                <button class="btn btn-success mt-auto"><i class="bi bi-check-lg"></i> Setujui & masukkan ke silsilah</button>
+                <button class="btn btn-success mt-auto" <?= in_array($usulan['status_keluarga'], ['menunggu', 'salah'], true) ? 'disabled' : '' ?>><i class="bi bi-check-lg"></i> Sahkan & masukkan ke silsilah</button>
+                <?php if ($usulan['status_keluarga'] === 'menunggu') : ?><div class="small text-body-secondary mt-2">Menunggu validasi keluarga terlebih dahulu.</div><?php endif ?>
+                <?php if ($usulan['status_keluarga'] === 'salah') : ?><div class="small text-danger mt-2">Keluarga menyatakan tidak benar; tolak agar pengusul memperbaiki.</div><?php endif ?>
             </form>
         </div>
         <div class="col-md-6">

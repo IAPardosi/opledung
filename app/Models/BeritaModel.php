@@ -14,7 +14,7 @@ class BeritaModel extends Model
     protected $useSoftDeletes = true;
     protected $useTimestamps  = true;
     protected $allowedFields  = [
-        'marga_id', 'kategori', 'judul', 'slug', 'ringkasan', 'isi', 'gambar', 'status', 'terbit_at', 'dilihat', 'created_by', 'updated_by',
+        'marga_id', 'punguan_id', 'kategori', 'judul', 'slug', 'ringkasan', 'isi', 'gambar', 'status', 'terbit_at', 'dilihat', 'created_by', 'updated_by',
     ];
     protected $validationRules = [
         'judul'    => ['label' => 'Judul', 'rules' => 'required|max_length[200]'],

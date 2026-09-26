@@ -3,7 +3,7 @@
 Dokumen ini adalah acuan resmi pengembangan fase pertama. Setiap perubahan
 standar harus diperbarui di dokumen ini terlebih dahulu sebelum diterapkan di kode.
 
-Versi: 2.0 · Status: Fase 1 + pengembangan (partuturan, pendaftaran berlapis, kanal informasi, tema Batak)
+Versi: 3.0 · Status: Fase 1 + pengembangan (tema Adat Modern, validasi dua lapis, punguan, Kenali Marga, mode tampilan)
 
 ---
 
@@ -23,7 +23,7 @@ Versi: 2.0 · Status: Fase 1 + pengembangan (partuturan, pendaftaran berlapis, k
 | PHP             | 8.2 atau lebih baru                                   |
 | Database        | MySQL 8 / MariaDB 10.6+ (wajib dukung recursive CTE)  |
 | Autentikasi     | CodeIgniter Shield                                    |
-| Frontend        | Bootstrap 5, JavaScript ringan (tanpa SPA framework); aset disimpan sendiri di `public/assets/vendor`, tanpa CDN |
+| Frontend        | Bootstrap 5 + tema "Adat Modern", JavaScript ringan (tanpa SPA framework); aset & font disimpan sendiri di `public/assets/vendor`, tanpa CDN |
 | Visual pohon    | D3 v7 (tree layout), dimuat per cabang lewat `/api/pohon/{id}` |
 | Import data     | PhpSpreadsheet (Excel .xlsx dan CSV)                  |
 
@@ -62,7 +62,8 @@ Versi: 2.0 · Status: Fase 1 + pengembangan (partuturan, pendaftaran berlapis, k
 | Super Admin            | Semua akses; membuat marga baru; mengatur role dan lingkup admin |
 | Ketua Adat             | Menetapkan dan memvalidasi Silsilah Pokok (Generasi 1–10); menyesuaikan istilah partuturan |
 | Admin Marga            | Memverifikasi pendaftaran dan usulan di seluruh marganya (Generasi 11 ke atas) |
-| Admin Wilayah          | Memverifikasi pendaftaran dan usulan **hanya dalam lingkupnya**: wilayah domisili (provinsi/kab/kota) dan/atau cabang pomparan (keturunan leluhur tertentu) |
+| Penatua Punguan        | Ketua/penatua punguan daerah (dimulai dari Medan): mengesahkan pendaftaran dan usulan anggota punguannya (lapis 2) |
+| Admin Wilayah          | Seperti penatua, tetapi lingkupnya wilayah domisili (provinsi/kab/kota) dan/atau cabang pomparan |
 | Pengurus Informasi     | Mengelola berita dan kegiatan |
 | Member                 | Anggota terverifikasi: melihat profil & partuturan, mengelola profil sendiri, mengusulkan data keluarga, memberi kesaksian keluarga |
 | Calon Member           | Baru mendaftar; hanya dapat mengisi silsilah dan melihat status pendaftarannya |
@@ -74,19 +75,36 @@ Versi: 2.0 · Status: Fase 1 + pengembangan (partuturan, pendaftaran berlapis, k
 - Data Silsilah Pokok hanya bisa berubah melalui Ketua Adat.
 - Setiap perubahan dicatat di `audit_logs` (siapa, kapan, data lama, data baru).
 
-### 4.2 Pendaftaran Member dan Validasi Berlapis
+### 4.2 Pendaftaran Kepala Keluarga dan Validasi Dua Lapis
 1. **Buat akun** → otomatis berstatus *Calon Member*.
-2. **Isi silsilah**: pilih *leluhur terdekat yang sudah tercatat* (mulai Sundut 10, karena
-   Generasi 1–10 sudah diisi Ketua Adat), lalu isi generasi di antaranya sampai ayah,
-   lalu data diri dan domisili. Sundut pendaftar dihitung otomatis.
-   Bila namanya sudah ada di silsilah, cukup ajukan **"Ini saya"**.
-3. **Kesaksian keluarga**: member terverifikasi yang satu pomparan dengan pendaftar
-   (bertemu paling jauh 3 sundut di atas leluhur yang dipilih) menyatakan *benar* atau
-   *tidak benar*, beserta catatan.
-4. **Keputusan admin**: Admin Wilayah (sesuai domisili atau cabang pendaftar) atau
-   Admin Marga menyetujui/menolak (penolakan wajib beralasan) dengan melihat jumlah
-   dan isi kesaksian. Bila disetujui, generasi antara dan pendaftar dibuat, akun
-   ditautkan, dan role naik menjadi Member.
+2. **Kepala keluarga mendaftarkan unit keluarganya**: pilih punguan, pilih *leluhur terdekat
+   yang sudah tercatat* (mulai Sundut 10), isi generasi antara sampai ayah, data diri,
+   lalu **istri/suami dan anak-anak**. Sundut dihitung otomatis.
+   Anak yang kelak mendaftar (mis. setelah menikah) **tidak mengisi ulang silsilah**, cukup
+   menekan **"Ini saya"** pada data yang sudah dicatat orang tuanya, sehingga silsilah satu
+   keluarga selalu sama.
+3. **Lapis 1, validasi keluarga**: pengusul menunjuk satu member sah dalam **garis langsung,
+   paling jauh 2 sundut ke atas atau ke bawah** (ayah/ibu, ompung, anak, atau pahompu).
+   Validator menyatakan *benar* atau *tidak benar* (wajib beralasan).
+   - Member yang mengusulkan keluarganya sendiri (mis. ayah menambah anaknya) otomatis
+     dianggap sah keluarga.
+   - Bila tidak ada member dalam garis langsung, usulan ditandai *tanpa validator* dan
+     penatua memeriksa lebih teliti.
+   - Bila validator tidak dapat dihubungi, penatua boleh **melewati** lapis 1 dengan alasan
+     tertulis (tercatat).
+4. **Lapis 2, pengesahan punguan**: Penatua Punguan (sesuai punguan pengusul), Admin Marga,
+   atau Ketua Adat untuk Silsilah Pokok mengesahkan atau menolak. Pengesahan **tidak bisa**
+   dilakukan selama lapis 1 masih menunggu atau menyatakan tidak benar.
+5. Setelah disahkan: generasi antara, kepala keluarga, pasangan, dan anak-anak dicatat;
+   akun ditautkan ke datanya, masuk punguan, dan naik menjadi Member.
+6. Kesaksian kerabat lain (satu pomparan) tetap dapat diberikan sebagai pelengkap.
+
+### 4.3 Punguan (Pusat, Daerah, Global)
+- Silsilah **tetap satu pohon** di satu database pusat; punguan hanya lapisan organisasi.
+- Tingkat: Pusat → Daerah (dimulai **Punguan Medan**) → Global (luar negeri, dengan negara).
+- Setiap member memilih punguan; pendaftaran dan usulan diteruskan ke penatua punguan itu.
+- Kegiatan dan berita dapat dikhususkan untuk satu punguan.
+- Punguan baru ditambahkan Super Admin di Admin → Punguan.
 
 ## 4A. Partuturan
 - Sistem menghitung cara memanggil antara dua anggota dari pohon: cari titik temu
@@ -100,7 +118,25 @@ Versi: 2.0 · Status: Fase 1 + pengembangan (partuturan, pendaftaran berlapis, k
   penentuannya ada di `app/Services/PartuturanService.php` dan diuji di
   `tests/database/PartuturanTest.php`.
 
-## 4B. Kanal Informasi
+## 4B. Kenali Marga dan Mode Tampilan
+- **Kenali Marga** (publik): kisah marga, bona pasogit, **leluhur sebelum marga** (4–5
+  generasi, informasi sejarah, *tidak dihitung sundut*), urutan besar sampai sundut aktif,
+  dan kartu sundut 1–3. Diisi Ketua Adat di Admin → Sejarah marga.
+- **Empat mode tampilan silsilah** (bisa berpindah dengan satu klik):
+  | Mode | Isi |
+  |---|---|
+  | Jalur saya | Garis lurus Sundut 1 → saya (ringkas: sundut tengah dilipat; lengkap: semua), dengan jumlah saudara di tiap sundut |
+  | Keluarga dekat | Saya di tengah: ompung, orang tua & saudaranya, saudara, anak, pahompu, beserta partuturan |
+  | Per sundut | Daftar satu generasi dengan filter dan pencarian |
+  | Pohon cabang | Pohon interaktif dibuka bertahap per cabang |
+
+## 4C. Tampilan (Tema "Adat Modern")
+- Palet gorga: merah `#a3161e`, hitam `#16110f`, putih; latar hangat `#f6f3f0`.
+- Tipografi: Bricolage Grotesque (judul) dan Figtree (isi), disimpan di server sendiri.
+- Navigasi kapsul melayang di atas; **navigasi bawah** di HP (Beranda, Silsilah, Tutur, Kabar, Akun).
+- Kartu bento, sudut membulat, ornamen gorga hanya sebagai aksen tipis.
+
+## 4D. Kanal Informasi
 - **Berita**: kategori berita, pengumuman, sukacita, dukacita; status draf/terbit.
 - **Kegiatan**: pesta adat, bona taon, partangiangan, arisan/punguan, rapat, sosial, dll.
   dengan waktu, tempat, kab/kota, tautan peta, dan narahubung.
@@ -139,7 +175,8 @@ dan tidak pernah ditampilkan ke publik atau member lain.
 | `partuturan`       | Istilah tutur sapa yang dapat disesuaikan Ketua Adat |
 | `admin_lingkup`    | Lingkup Admin Wilayah (kode wilayah atau cabang leluhur) |
 | `konfirmasi_keluarga` | Kesaksian kerabat atas pendaftaran/usulan |
-| `berita`, `kegiatan` | Kanal informasi |
+| `berita`, `kegiatan` | Kanal informasi (bisa per punguan) |
+| `punguan`          | Organisasi pomparan per daerah (Pusat/Daerah/Global) |
 | `wilayah`          | Referensi wilayah Indonesia (provinsi, kab/kota, kecamatan, desa) kode Kemendagri |
 
 ### 6.2 Strategi Pohon untuk Skala Besar
@@ -227,6 +264,10 @@ Field mengikuti data kependudukan Indonesia (KTP/KK) ditambah data adat.
 7. Jalur ke leluhur: `G1 → G2 → … → anggota`.
 8. Pohon silsilah interaktif (publik: umum; login: detail per anggota).
 9. Daftar anggota per generasi dengan filter (generasi, garis, wilayah, status hidup) dan pencarian.
+
+**Sudah ditambahkan (v3.0):** tema Adat Modern, pendaftaran kepala keluarga + validasi dua lapis
+(validator keluarga garis langsung + penatua punguan), punguan (mulai Medan), Kenali Marga,
+empat mode tampilan silsilah.
 
 **Sudah ditambahkan (v2.0):** partuturan (cek hubungan + kamus), pendaftaran member
 berlapis (kesaksian keluarga + Admin Wilayah), berita & kegiatan, tema visual gorga.

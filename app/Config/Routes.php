@@ -13,6 +13,9 @@ $routes->get('api/pohon/(:num)', 'Api::pohon/$1');
 $routes->get('api/cari', 'Api::cari');
 $routes->get('api/wilayah', 'Api::wilayah');
 $routes->get('partuturan', 'Partuturan::kamus');
+$routes->get('kenali-marga', 'KenaliMarga::index');
+$routes->get('punguan', 'Punguan::index');
+$routes->get('punguan/(:segment)', 'Punguan::detail/$1');
 $routes->get('berita', 'Berita::index');
 $routes->get('berita/(:segment)', 'Berita::baca/$1');
 $routes->get('kegiatan', 'Kegiatan::index');
@@ -23,7 +26,8 @@ service('auth')->routes($routes);
 // Login (termasuk calon member): pendaftaran silsilah.
 $routes->group('', ['filter' => 'session'], static function (RouteCollection $routes): void {
     $routes->match(['GET', 'POST'], 'pendaftaran', 'Pendaftaran::index');
-    $routes->post('pendaftaran/klaim/(:num)', 'Pendaftaran::klaim/$1');
+    $routes->match(['GET', 'POST'], 'pendaftaran/klaim/(:num)', 'Pendaftaran::klaim/$1');
+    $routes->get('pendaftaran/validator', 'Pendaftaran::validator');
     $routes->get('profil-saya', 'Anggota::profilSaya');
     $routes->get('usulan-saya', 'Anggota::usulanSaya');
 });
@@ -34,6 +38,11 @@ $routes->group('', ['filter' => 'permission:silsilah.view'], static function (Ro
     $routes->get('api/partuturan/(:num)', 'Partuturan::api/$1');
     $routes->get('konfirmasi-keluarga', 'Pendaftaran::konfirmasi');
     $routes->post('konfirmasi-keluarga/(:num)', 'Pendaftaran::simpanKonfirmasi/$1');
+    $routes->post('konfirmasi-keluarga/(:num)/validasi', 'Pendaftaran::simpanValidasi/$1');
+    $routes->get('garis', 'Silsilah::garis');
+    $routes->get('garis/(:num)', 'Silsilah::garis/$1');
+    $routes->get('keluarga-dekat', 'Silsilah::keluargaDekat');
+    $routes->get('keluarga-dekat/(:num)', 'Silsilah::keluargaDekat/$1');
 
     $routes->get('anggota/(:num)', 'Anggota::profil/$1');
     $routes->get('anggota/(:num)/foto', 'Anggota::foto/$1');
@@ -51,6 +60,7 @@ $routes->group('admin', ['filter' => 'permission:admin.access', 'namespace' => '
     $routes->get('usulan/(:num)', 'Usulan::detail/$1');
     $routes->post('usulan/(:num)/setujui', 'Usulan::setujui/$1');
     $routes->post('usulan/(:num)/tolak', 'Usulan::tolak/$1');
+    $routes->post('usulan/(:num)/lewati-keluarga', 'Usulan::lewatiKeluarga/$1');
 
     $routes->match(['GET', 'POST'], 'import', 'Import::index');
     $routes->post('import/simpan', 'Import::simpan');
@@ -62,6 +72,7 @@ $routes->group('admin', ['filter' => 'permission:admin.access', 'namespace' => '
 // Istilah partuturan: Ketua Adat.
 $routes->group('admin', ['filter' => 'permission:partuturan.kelola', 'namespace' => 'App\Controllers\Admin'], static function (RouteCollection $routes): void {
     $routes->match(['GET', 'POST'], 'partuturan', 'Partuturan::index');
+    $routes->match(['GET', 'POST'], 'sejarah', 'Sejarah::index');
 });
 
 // Berita & kegiatan: pengurus informasi.
@@ -81,6 +92,10 @@ $routes->group('admin', ['filter' => 'group:superadmin', 'namespace' => 'App\Con
     $routes->get('marga', 'Marga::index');
     $routes->match(['GET', 'POST'], 'marga/tambah', 'Marga::form');
     $routes->match(['GET', 'POST'], 'marga/(:num)/ubah', 'Marga::form/$1');
+
+    $routes->get('punguan', 'Punguan::index');
+    $routes->match(['GET', 'POST'], 'punguan/tambah', 'Punguan::form');
+    $routes->match(['GET', 'POST'], 'punguan/(:num)/ubah', 'Punguan::form/$1');
 
     $routes->get('pengguna', 'Pengguna::index');
     $routes->match(['GET', 'POST'], 'pengguna/(:num)/ubah', 'Pengguna::ubah/$1');

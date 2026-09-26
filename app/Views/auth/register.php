@@ -3,15 +3,15 @@
 
 <?= $this->section('main') ?>
 <div class="container py-4" style="max-width: 1000px">
-    <div class="row g-0 card overflow-hidden flex-row">
-        <div class="col-md-5 pola-gorga text-white p-4 p-lg-5">
-            <div class="horas" style="font-family:var(--font-judul);color:#f0a9ad">Mardongan tubu</div>
-            <h1 class="h3 mt-2">Daftar sebagai Member</h1>
+    <div class="row g-0 card overflow-hidden flex-row" style="border-radius: 32px">
+        <div class="col-md-5 kartu-gelap p-4 p-lg-5">
+            <div class="horas" style="color:var(--merah-terang);font-weight:700;letter-spacing:.12em;font-size:.8rem;text-transform:uppercase">Kepala keluarga</div>
+            <h1 class="h3 mt-2">Daftarkan keluarga Anda</h1>
             <p class="small" style="color:#e2d6cb">Pendaftaran terdiri dari tiga langkah:</p>
             <ol class="small ps-3" style="color:#e2d6cb">
                 <li class="mb-2"><b class="text-white">Buat akun</b> di halaman ini.</li>
-                <li class="mb-2"><b class="text-white">Isi silsilah Anda</b>: pilih leluhur terdekat yang sudah tercatat (mis. ayah atau ompung), lalu lengkapi generasi di antaranya.</li>
-                <li><b class="text-white">Validasi</b>: kerabat dekat memberi kesaksian, lalu Admin Wilayah menyetujui. Setelah itu Anda menjadi member.</li>
+                <li class="mb-2"><b class="text-white">Isi silsilah dan keluarga</b>: pilih leluhur terdekat yang sudah tercatat, lalu istri dan anak-anak.</li>
+                <li><b class="text-white">Validasi dua lapis</b>: ayah/ompung atau anak Anda yang sudah menjadi member membenarkan, lalu penatua punguan mengesahkan.</li>
             </ol>
         </div>
         <div class="col-md-7 p-4 p-lg-5">
@@ -36,7 +36,7 @@
                         <input type="password" class="form-control" id="password_confirm" name="password_confirm" autocomplete="new-password" required>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-utama btn-lg w-100">Buat akun & lanjut isi silsilah</button>
+                <button type="submit" class="btn btn-utama btn-lg w-100">Buat akun & lanjut isi silsilah keluarga</button>
             </form>
             <p class="small text-center mt-3 mb-0">Sudah punya akun? <a href="<?= url_to('login') ?>">Masuk</a></p>
         </div>

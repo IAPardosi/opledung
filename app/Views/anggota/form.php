@@ -31,7 +31,7 @@ $kembali      = ($person?->id ?? $induk?->id) ? site_url('anggota/' . ($person?-
     <a href="<?= $kembali ?>" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Kembali</a>
     <h1 class="h3 mt-2 mb-1"><?= esc($judul) ?></h1>
     <?php if (! $langsung) : ?>
-        <div class="alert alert-info small"><i class="bi bi-info-circle"></i> Isian Anda akan dikirim sebagai <b>usulan</b> dan baru masuk ke silsilah setelah disetujui Verifikator<?= $mode === 'ubah' && $person?->generasi_ke <= 10 ? ' atau Ketua Adat' : '' ?>.</div>
+        <div class="alert alert-info small"><i class="bi bi-info-circle"></i> Isian Anda akan dikirim sebagai <b>usulan</b> dan baru masuk ke silsilah setelah divalidasi keluarga lalu disahkan penatua punguan<?= $mode === 'ubah' && $person?->generasi_ke <= 10 ? ' atau Ketua Adat' : '' ?>.</div>
     <?php endif ?>
     <?php if ($mode === 'anak') : ?>
         <p class="text-body-secondary">Anak akan tercatat di <b>Generasi <?= $induk->generasi_ke + 1 ?></b>.
@@ -220,7 +220,8 @@ $kembali      = ($person?->id ?? $induk?->id) ? site_url('anggota/' . ($person?-
         <?php endif ?>
 
         <?php if (! $langsung) : ?>
-        <div class="form-section">Catatan untuk Verifikator</div>
+        <?= view('partials/pilih_validator', ['kandidat' => $kandidat ?? []]) ?>
+        <div class="form-section">Catatan untuk penatua</div>
         <textarea class="form-control" name="catatan_pengusul" rows="2" placeholder="Sumber informasi, mis. buku tarombo keluarga, keterangan orang tua…"><?= esc(old('catatan_pengusul')) ?></textarea>
         <?php endif ?>
 
