@@ -249,6 +249,11 @@ dl.data-profil dd { margin-bottom: .6rem; font-weight: 500; }
 .node .toggle { cursor: pointer; }
 .node.terpilih rect.kartu { stroke-width: 3px; }
 .link { fill: none; stroke: #d5cbc2; stroke-width: 1.6px; }
+.link.jalur { stroke: var(--hitam); stroke-width: 3.5px; }
+.node.di-jalur rect.kartu { stroke-width: 2.5px; }
+.node.target rect.kartu { fill: var(--merah-muda); stroke: var(--merah); stroke-width: 3.5px; }
+.node .toggle text { font-weight: 700; fill: var(--teks); }
+.pohon-legenda i.garis-jalur { background: var(--hitam); height: .3rem; width: 1rem; vertical-align: 2px; }
 
 /* Mode tampilan */
 .mode-tampil { display: inline-flex; gap: .25rem; padding: .3rem; background: var(--putih); border: 1px solid var(--garis-halus); border-radius: 999px; flex-wrap: wrap; }
@@ -295,3 +300,15 @@ dl.data-profil dd { margin-bottom: .6rem; font-weight: 500; }
 .footer-silsilah .motto span { color: var(--merah-terang); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---------- Punguan: member & keuangan ---------- */
+.sel-iuran { display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 8px; font-size: .8rem; font-weight: 700; }
+.sel-sah { background: var(--hijau-muda); color: var(--hijau); }
+.sel-tunggu { background: #fff3cd; color: #8a6d00; }
+.sel-belum { background: var(--merah-muda); color: var(--merah); }
+.tabel-iuran td, .tabel-iuran th { padding-left: .3rem; padding-right: .3rem; }
+.aksi-lipat { display: inline-block; position: relative; }
+.aksi-lipat > summary { list-style: none; }
+.aksi-lipat > summary::-webkit-details-marker { display: none; }
+.aksi-lipat[open] > form { position: absolute; right: 0; z-index: 20; width: 240px; box-shadow: 0 12px 30px rgba(22, 17, 15, .15); }
+.kartu-member { border-radius: var(--radius); }

@@ -48,7 +48,7 @@ $orangKecil = static function ($o, ?string $ket = null): string {
                 <span class="avatar garis-<?= esc($p->garis, 'attr') ?>"><?= esc(inisial($p->nama_lengkap)) ?></span>
             <?php endif ?>
             <div class="flex-grow-1">
-                <div class="d-flex flex-wrap gap-2 mb-1"><?= badge_garis($p->garis) ?> <?= $statusDataBadge ?> <?php if ($diri) : ?><span class="badge text-bg-warning">Profil Anda</span><?php endif ?></div>
+                <div class="d-flex flex-wrap gap-2 mb-1"><?= badge_garis($p->garis) ?> <?= $statusDataBadge ?> <?php if ($diri) : ?><span class="badge text-bg-warning">Profil Anda</span><?php endif ?> <?= $p->garis !== 'anak_boru' ? badge_member($keanggotaan) : '' ?></div>
                 <h1 class="h3 mb-0"><?= esc($p->nama_lengkap) ?></h1>
                 <?php if ($p->gelar_adat || $p->nama_panggilan) : ?>
                     <div class="text-body-secondary"><?= esc(implode(' · ', array_filter([$p->gelar_adat, $p->nama_panggilan ? 'Panggilan: ' . $p->nama_panggilan : null]))) ?></div>
@@ -158,6 +158,45 @@ $orangKecil = static function ($o, ?string $ket = null): string {
         </div>
 
         <div class="col-lg-5">
+            <?php if ($diri || $keanggotaan !== null || $keuangan !== null) : ?>
+            <div class="card mb-4 kartu-member">
+                <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-people"></i> Keanggotaan</span>
+                    <?= badge_member($keanggotaan) ?>
+                </div>
+                <div class="card-body">
+                    <?php if ($keanggotaan !== null && $keanggotaan['status'] === 'aktif') : ?>
+                        <p class="mb-2"><b>Member Punguan <?= esc($keanggotaan['nama_punguan']) ?></b><?= $keanggotaan['nomor_anggota'] ? ' · No. <span class="font-monospace">' . esc($keanggotaan['nomor_anggota']) . '</span>' : '' ?></p>
+                        <p class="small text-teks-2 mb-0">Terdaftar sejak <?= esc(tanggal_indo($keanggotaan['tanggal_masuk'])) ?>. Kewajiban punguan (iuran dan lainnya) berlaku dan dicatat oleh Humas, lalu divalidasi Penatua.</p>
+                    <?php elseif ($keanggotaan !== null) : ?>
+                        <p class="small mb-0"><i class="bi bi-hourglass-split"></i> Pengajuan Member Punguan <b><?= esc($keanggotaan['nama_punguan']) ?></b> menunggu pengesahan Penatua. Sampai disahkan, statusnya tetap <b>Member Marga</b>.</p>
+                    <?php else : ?>
+                        <p class="small text-teks-2">Tercatat di silsilah sebagai <b>Member Marga</b>. Belum menjadi anggota punguan mana pun, jadi tidak ada kewajiban punguan.</p>
+                        <?php if ($pilihPunguan !== [] && $p->isHidup()) : ?>
+                            <form method="post" action="<?= site_url('profil-saya/punguan') ?>" class="d-flex gap-2 flex-wrap">
+                                <?= csrf_field() ?>
+                                <select name="punguan_id" class="form-select form-select-sm" style="max-width: 220px" aria-label="Punguan" required>
+                                    <?php foreach ($pilihPunguan as $pg) : ?><option value="<?= $pg['id'] ?>" <?= (int) $pg['id'] === (int) auth()->user()->punguan_id ? 'selected' : '' ?>><?= esc($pg['nama']) ?></option><?php endforeach ?>
+                                </select>
+                                <button class="btn btn-sm btn-utama">Ajukan jadi Member Punguan</button>
+                            </form>
+                        <?php endif ?>
+                    <?php endif ?>
+                </div>
+                <?php if ($keuangan !== null && ($keanggotaan !== null || $keuangan !== [])) : ?>
+                    <div class="card-header fw-semibold border-top"><i class="bi bi-wallet2"></i> <?= $diri ? 'Keuangan saya' : 'Catatan keuangan' ?></div>
+                    <ul class="list-group list-group-flush small">
+                        <?php if ($keuangan === []) : ?><li class="list-group-item text-teks-2">Belum ada catatan.</li><?php endif ?>
+                        <?php foreach (array_slice($keuangan, 0, 8) as $c) : ?>
+                            <li class="list-group-item d-flex justify-content-between gap-2">
+                                <span><?= esc($c['kategori']) ?> <span class="text-teks-3"><?= esc(\App\Services\KeuanganService::labelPeriode($c['periode']) !== '–' ? \App\Services\KeuanganService::labelPeriode($c['periode']) : tanggal_indo($c['tanggal'])) ?></span></span>
+                                <span class="text-nowrap"><?= rupiah($c['nominal']) ?> <?= ['sah' => '<i class="bi bi-check-circle-fill text-success" title="Sah"></i>', 'menunggu' => '<i class="bi bi-hourglass-split text-warning" title="Menunggu validasi"></i>', 'ditolak' => '<i class="bi bi-x-circle-fill text-danger" title="Ditolak"></i>'][$c['status']] ?></span>
+                            </li>
+                        <?php endforeach ?>
+                    </ul>
+                <?php endif ?>
+            </div>
+            <?php endif ?>
             <div class="card mb-4">
                 <div class="card-header fw-semibold">Orang Tua</div>
                 <div class="list-group list-group-flush daftar-orang">

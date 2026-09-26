@@ -9,6 +9,8 @@ $routes->get('/', 'Beranda::index');
 $routes->get('silsilah', 'Silsilah::pohon');
 $routes->get('silsilah/(:num)', 'Silsilah::pohon/$1');
 $routes->get('generasi', 'Silsilah::generasi');
+$routes->get('mapping', 'Silsilah::mapping');
+$routes->get('mapping/(:num)', 'Silsilah::mapping/$1');
 $routes->get('api/pohon/(:num)', 'Api::pohon/$1');
 $routes->get('api/cari', 'Api::cari');
 $routes->get('api/wilayah', 'Api::wilayah');
@@ -30,6 +32,7 @@ $routes->group('', ['filter' => 'session'], static function (RouteCollection $ro
     $routes->get('pendaftaran/validator', 'Pendaftaran::validator');
     $routes->get('profil-saya', 'Anggota::profilSaya');
     $routes->get('usulan-saya', 'Anggota::usulanSaya');
+    $routes->post('profil-saya/punguan', 'Anggota::ajukanPunguan');
 });
 
 // Member terverifikasi: detail silsilah, profil per anggota, dan partuturan.
@@ -67,6 +70,32 @@ $routes->group('admin', ['filter' => 'permission:admin.access', 'namespace' => '
     $routes->get('import/template', 'Import::template');
 
     $routes->match(['GET', 'POST'], 'leluhur-awal', 'LeluhurAwal::index');
+});
+
+// Data anggota: kontrol status hidup/meninggal (lingkup penatua/admin wilayah dibatasi).
+$routes->group('admin', ['filter' => 'permission:anggota.kelola', 'namespace' => 'App\Controllers\Admin'], static function (RouteCollection $routes): void {
+    $routes->get('anggota', 'Anggota::index');
+    $routes->post('anggota/(:num)/status', 'Anggota::status/$1');
+});
+
+// Member punguan: Humas mendaftarkan, Penatua mengesahkan.
+$routes->group('admin', ['filter' => 'permission:punguan.anggota', 'namespace' => 'App\Controllers\Admin'], static function (RouteCollection $routes): void {
+    $routes->get('punguan-anggota', 'PunguanAnggota::index');
+    $routes->post('punguan-anggota/tambah', 'PunguanAnggota::tambah');
+    $routes->post('punguan-anggota/(:num)/sahkan', 'PunguanAnggota::sahkan/$1');
+    $routes->post('punguan-anggota/(:num)/nonaktifkan', 'PunguanAnggota::nonaktifkan/$1');
+    $routes->post('punguan-anggota/(:num)/aktifkan', 'PunguanAnggota::aktifkan/$1');
+});
+
+// Keuangan punguan: Humas mencatat, Penatua memvalidasi (hanya Member Punguan).
+$routes->group('admin', ['filter' => 'permission:keuangan.catat', 'namespace' => 'App\Controllers\Admin'], static function (RouteCollection $routes): void {
+    $routes->get('keuangan', 'Keuangan::index');
+    $routes->match(['GET', 'POST'], 'keuangan/catat', 'Keuangan::catat');
+    $routes->match(['GET', 'POST'], 'keuangan/kategori', 'Keuangan::kategori');
+    $routes->get('keuangan/anggota/(:num)', 'Keuangan::anggota/$1');
+    $routes->post('keuangan/validasi-banyak', 'Keuangan::validasiBanyak');
+    $routes->post('keuangan/(:num)/validasi', 'Keuangan::validasi/$1');
+    $routes->post('keuangan/(:num)/hapus', 'Keuangan::hapus/$1');
 });
 
 // Istilah partuturan: Ketua Adat.

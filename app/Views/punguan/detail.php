@@ -11,7 +11,10 @@
             <h1 class="h2 mb-1"><?= esc($p['nama']) ?></h1>
             <p class="text-teks-2 mb-0"><?= esc($p['keterangan'] ?? '') ?></p>
         </div>
-        <div class="stat text-end"><div class="angka"><?= number_format($jumlah, 0, ',', '.') ?></div><div class="label">member terdaftar</div></div>
+        <div class="d-flex gap-4">
+            <div class="stat text-end"><div class="angka text-utama"><?= number_format($jumlahPunguan, 0, ',', '.') ?></div><div class="label">member punguan</div></div>
+            <div class="stat text-end"><div class="angka"><?= number_format($jumlah, 0, ',', '.') ?></div><div class="label">akun member marga</div></div>
+        </div>
     </div>
     <div class="row g-4">
         <div class="col-lg-7">

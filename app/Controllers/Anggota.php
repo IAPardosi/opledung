@@ -67,8 +67,16 @@ class Anggota extends BaseController
             ? (new PartuturanService())->hubungan((int) $user->person_id, $p->id)
             : null;
 
+        // Keanggotaan punguan & keuangan: terlihat oleh diri sendiri dan pengurus punguannya.
+        $keanggotaan  = (new \App\Models\KeanggotaanPunguanModel())->berlaku($p->id);
+        $punguanSvc   = new \App\Services\PunguanService();
+        $lihatKeuangan = $diri || ($keanggotaan !== null && $user->can('keuangan.catat') && $punguanSvc->bolehKelola($user, (int) $keanggotaan['punguan_id']));
+
         return view('anggota/profil', [
             ...$profil,
+            'keanggotaan'   => $keanggotaan,
+            'keuangan'      => $lihatKeuangan ? (new \App\Services\KeuanganService())->riwayat($p->id, 24) : null,
+            'pilihPunguan'  => $diri && $keanggotaan === null ? (new \App\Models\PunguanModel())->aktif($p->marga_id) : [],
             'tutur'         => $tutur,
             'saya'          => $tutur !== null ? (new PersonModel())->find((int) $user->person_id) : null,
             'diri'          => $diri,
@@ -97,6 +105,25 @@ class Anggota extends BaseController
         }
 
         return view('anggota/profil_saya_kosong');
+    }
+
+    /**
+     * Member mengajukan diri menjadi Member Punguan (disahkan Penatua punguan tersebut).
+     */
+    public function ajukanPunguan(): RedirectResponse
+    {
+        $user = $this->user();
+        if ($user->person_id === null) {
+            return redirect()->to('pendaftaran');
+        }
+
+        try {
+            (new \App\Services\PunguanService())->ajukan($user, (int) $this->request->getPost('punguan_id'), (int) $user->person_id, (string) $this->request->getPost('catatan'));
+
+            return redirect()->to('anggota/' . $user->person_id)->with('sukses', 'Pengajuan Member Punguan terkirim dan menunggu pengesahan Penatua.');
+        } catch (SilsilahException $e) {
+            return redirect()->to('anggota/' . $user->person_id)->with('galat', $e->getMessage());
+        }
     }
 
     public function usulanSaya(): string

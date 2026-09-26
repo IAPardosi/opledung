@@ -2,12 +2,13 @@
 /**
  * Pemilih mode tampilan silsilah.
  *
- * @var string   $aktif garis|keluarga|sundut|pohon
+ * @var string   $aktif garis|mapping|keluarga|sundut|pohon
  * @var int|null $id    orang yang sedang dilihat (opsional)
  */
 $id    = $id ?? null;
 $modes = [
     'garis'    => ['Jalur saya', 'bi-signpost-split', 'garis' . ($id ? '/' . $id : '')],
+    'mapping'  => ['Mapping keturunan', 'bi-diagram-2', 'mapping' . ($id ? '/' . $id : '')],
     'keluarga' => ['Keluarga dekat', 'bi-people', 'keluarga-dekat' . ($id ? '/' . $id : '')],
     'sundut'   => ['Per sundut', 'bi-list-ol', 'generasi'],
     'pohon'    => ['Pohon cabang', 'bi-diagram-3', 'silsilah' . ($id ? '/' . $id : '')],

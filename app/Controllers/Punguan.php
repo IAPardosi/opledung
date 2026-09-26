@@ -37,6 +37,7 @@ class Punguan extends BaseController
         return view('punguan/detail', [
             'p'        => $p,
             'jumlah'   => db_connect()->table('users')->where('punguan_id', $p['id'])->where('person_id IS NOT NULL', null, false)->countAllResults(),
+            'jumlahPunguan' => db_connect()->table('keanggotaan_punguan')->where('punguan_id', $p['id'])->where('status', 'aktif')->countAllResults(),
             'kegiatan' => (new KegiatanModel())->akanDatang()->where('punguan_id', $p['id'])->findAll(10),
             'penatua'  => db_connect()->table('admin_lingkup l')->select('u.username, pr.nama_lengkap')
                 ->join('users u', 'u.id = l.user_id')->join('persons pr', 'pr.id = u.person_id', 'left')

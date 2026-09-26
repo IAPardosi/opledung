@@ -122,3 +122,28 @@ if (! function_exists('nama_bulan')) {
         return $pendek ? mb_substr($nama, 0, 3) : $nama;
     }
 }
+
+if (! function_exists('badge_member')) {
+    /**
+     * Lencana jenis member: Member Punguan (aktif/menunggu) atau Member Marga.
+     *
+     * @param array{status: string, punguan?: string, nama_punguan?: string}|null $keanggotaan
+     */
+    function badge_member(?array $keanggotaan): string
+    {
+        $punguan = esc($keanggotaan['punguan'] ?? $keanggotaan['nama_punguan'] ?? '');
+
+        return match ($keanggotaan['status'] ?? null) {
+            'aktif'    => '<span class="chip chip-merah" title="Terdaftar dan disahkan di ' . $punguan . '"><i class="bi bi-people-fill"></i> Member Punguan · ' . $punguan . '</span>',
+            'menunggu' => '<span class="chip" title="Menunggu pengesahan Penatua"><i class="bi bi-hourglass-split"></i> Member Marga · ajuan ' . $punguan . '</span>',
+            default    => '<span class="chip"><i class="bi bi-diagram-3"></i> Member Marga</span>',
+        };
+    }
+}
+
+if (! function_exists('rupiah')) {
+    function rupiah(int|string|null $n): string
+    {
+        return 'Rp' . number_format((int) $n, 0, ',', '.');
+    }
+}

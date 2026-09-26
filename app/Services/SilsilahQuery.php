@@ -21,6 +21,13 @@ class SilsilahQuery
      */
     public const KOLOM_PUBLIK = ['id', 'kode_anggota', 'nama_lengkap', 'gelar_adat', 'generasi_ke', 'garis', 'jenis_kelamin', 'status_hidup', 'induk_id', 'urutan_anak'];
 
+    /**
+     * Batas node pada mapping mode lengkap.
+     */
+    public const BATAS_LENGKAP = 1500;
+
+    public const MODE_MAPPING = ['fokus', 'keluarga', 'lengkap'];
+
     private readonly BaseConnection $db;
 
     public function __construct(
@@ -120,6 +127,123 @@ class SilsilahQuery
         }
 
         return $nodes[$akarId];
+    }
+
+    /**
+     * Mapping keturunan: pohon dari leluhur (Sundut 1 atau sundut pilihan) sampai orang ini.
+     *
+     *  - fokus    : hanya garis lurus; saudara di setiap sundut dilipat ("+N")
+     *  - keluarga : garis lurus + saudara di setiap sundut + anak dan cucu orang ini
+     *  - lengkap  : seluruh cabang dari sundut awal sampai sundut orang ini (+1),
+     *               dipangkas bila melebihi BATAS_LENGKAP agar tetap ringan
+     *
+     * Setiap node membawa 'di_jalur', 'target', 'jumlah_anak', dan 'tersembunyi'
+     * (anak yang belum dimuat, bisa dibuka lewat /api/pohon).
+     *
+     * @return array{akar: array<string, mixed>, jalur: list<Person>, target: Person, mulai: Person, jumlah: int, dipangkas: bool}|null
+     */
+    public function mapping(int $targetId, string $mode = 'fokus', ?int $mulaiGenerasi = null): ?array
+    {
+        $jalur  = $this->jalurLeluhur($targetId);
+        $target = end($jalur) ?: null;
+        if ($target === null || $target->id !== $targetId || $target->garis === 'pasangan') {
+            return null;
+        }
+
+        $mulai = $jalur[0];
+        foreach ($jalur as $p) {
+            if ($mulaiGenerasi !== null && $p->generasi_ke === $mulaiGenerasi) {
+                $mulai = $p;
+            }
+        }
+        $jalurDipakai = array_values(array_filter($jalur, static fn (Person $p): bool => $p->generasi_ke >= $mulai->generasi_ke));
+        $jalurIds     = array_map(static fn (Person $p): int => $p->id, $jalurDipakai);
+
+        $semua     = $jalurDipakai;
+        $dipangkas = false;
+
+        if ($mode === 'keluarga' || $mode === 'lengkap') {
+            $semua = [...$semua, ...$this->persons->whereIn('induk_id', $jalurIds)->findAll(), ...$this->keturunan($targetId, 2)];
+        }
+
+        if ($mode === 'lengkap') {
+            $kedalaman = $target->generasi_ke - $mulai->generasi_ke + 1;
+            while ($kedalaman > 1 && $this->jumlahKeturunanSampai($mulai->id, $kedalaman) > self::BATAS_LENGKAP) {
+                $kedalaman--;
+                $dipangkas = true;
+            }
+            $semua = [...$semua, ...$this->keturunan($mulai->id, $kedalaman)];
+        }
+
+        // Unik, lalu urut per sundut agar induk selalu diproses lebih dulu.
+        $unik = [];
+        foreach ($semua as $p) {
+            $unik[$p->id] = $p;
+        }
+        uasort($unik, static fn (Person $a, Person $b): int => [$a->generasi_ke, $a->induk_id ?? 0, $a->urutan_anak ?? 99, $a->id]
+            <=> [$b->generasi_ke, $b->induk_id ?? 0, $b->urutan_anak ?? 99, $b->id]);
+
+        $jumlahAnak = array_map('intval', array_column(
+            $this->db->table('persons')->select('induk_id, COUNT(*) AS n')
+                ->whereIn('induk_id', array_keys($unik))->where('deleted_at', null)
+                ->groupBy('induk_id')->get()->getResultArray(),
+            'n',
+            'induk_id',
+        ));
+
+        $diJalur = array_flip($jalurIds);
+        $nodes   = [];
+        foreach ($unik as $p) {
+            $row                = array_intersect_key($p->toArray(), array_flip(self::KOLOM_PUBLIK));
+            $row['jumlah_anak'] = $jumlahAnak[$p->id] ?? 0;
+            $row['punya_anak']  = $row['jumlah_anak'] > 0;
+            $row['di_jalur']    = isset($diJalur[$p->id]);
+            $row['target']      = $p->id === $target->id;
+            $row['anak']        = [];
+            $nodes[$p->id]      = $row;
+        }
+
+        foreach (array_reverse(array_keys($nodes)) as $id) {
+            $indukId = $nodes[$id]['induk_id'];
+            if ($id !== $mulai->id && $indukId !== null && isset($nodes[$indukId])) {
+                array_unshift($nodes[$indukId]['anak'], $nodes[$id]);
+            }
+        }
+
+        // Hitung anak yang belum ikut dimuat (dari atas ke bawah pada salinan bersarang).
+        $akar = $this->tandaiTersembunyi($nodes[$mulai->id]);
+
+        return [
+            'akar'      => $akar,
+            'jalur'     => $jalur,
+            'target'    => $target,
+            'mulai'     => $mulai,
+            'jumlah'    => count($nodes),
+            'dipangkas' => $dipangkas,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     *
+     * @return array<string, mixed>
+     */
+    private function tandaiTersembunyi(array $node): array
+    {
+        $node['anak']        = array_map($this->tandaiTersembunyi(...), $node['anak']);
+        $node['tersembunyi'] = max(0, $node['jumlah_anak'] - count($node['anak']));
+
+        return $node;
+    }
+
+    private function jumlahKeturunanSampai(int $personId, int $kedalaman): int
+    {
+        return $this->db->table('person_paths pp')
+            ->join('persons p', 'p.id = pp.descendant_id')
+            ->where('pp.ancestor_id', $personId)
+            ->where('pp.depth <=', $kedalaman)
+            ->where('p.deleted_at', null)
+            ->countAllResults();
     }
 
     /**

@@ -31,7 +31,7 @@ php spark db:seed DatabaseSeeder
 php spark db:seed DemoSilsilahSeeder
 ```
 
-Seeder ini membuat sekitar 4.500 orang **fiktif** dalam 14 generasi, lengkap dengan boru, pasangan, dan anak boru, serta contoh berita, kegiatan, dan satu pendaftaran yang menunggu validasi.
+Seeder ini membuat sekitar 4.500 orang **fiktif** dalam 14 generasi, lengkap dengan boru, pasangan, dan anak boru, serta contoh berita, kegiatan, satu pendaftaran yang menunggu validasi, dan Punguan Medan dengan 11 Member Punguan, 4 kategori keuangan, iuran tahun berjalan, dan catatan yang menunggu validasi Penatua.
 
 Akun demo (password `Demo#12345`), semuanya `@silsilah.local`:
 
@@ -39,10 +39,10 @@ Akun demo (password `Demo#12345`), semuanya `@silsilah.local`:
 |---|---|
 | `ketuaadat@` | Ketua Adat (Silsilah Pokok, partuturan, sejarah marga) |
 | `verifikator@` | Admin Marga |
-| `penatua@` | Penatua Punguan Medan (lapis 2) |
-| `humas@` | Pengurus Informasi (berita & kegiatan) |
-| `amang@` | Member, ayah dari `member@`; validator keluarga untuk pendaftaran `calon@` |
-| `member@` | Member (Sundut 12) |
+| `penatua@` | Penatua Punguan Medan: lapis 2 pendaftaran, sahkan member punguan, validasi keuangan |
+| `humas@` | Humas Punguan Medan: berita & kegiatan, daftarkan member punguan, catat keuangan |
+| `amang@` | Member Punguan Medan (menunggak 2 bulan), ayah dari `member@`; validator keluarga untuk pendaftaran `calon@` |
+| `member@` | Member Punguan Medan (Sundut 12), iuran lancar |
 | `calon@` | Calon member dengan pendaftaran keluarga yang menunggu validasi |
 
 ## Menjalankan
@@ -53,12 +53,15 @@ php spark serve     # buka http://localhost:8080
 
 | Halaman | Akses |
 |---|---|
-| `/`, `/kenali-marga`, `/silsilah`, `/generasi`, `/partuturan`, `/berita`, `/kegiatan`, `/punguan` | Publik |
+| `/`, `/kenali-marga`, `/mapping` Mapping keturunan, `/silsilah`, `/generasi`, `/partuturan`, `/berita`, `/kegiatan`, `/punguan` | Publik |
 | `/pendaftaran` Daftarkan keluarga, status, "Ini saya" | Login (calon member) |
 | `/garis` Jalur saya, `/keluarga-dekat`, `/anggota/{id}`, `/hubungan`, `/konfirmasi-keluarga` | Member |
 | `/admin/usulan`, `/admin/import` | Ketua Adat, Admin Marga, Penatua Punguan, Admin Wilayah (sesuai lingkup) |
 | `/admin/leluhur-awal`, `/admin/partuturan`, `/admin/sejarah` | Ketua Adat |
 | `/admin/berita`, `/admin/kegiatan` | Pengurus Informasi, Admin Marga, Ketua Adat, Penatua |
+| `/admin/anggota` Data anggota (status hidup/meninggal) | Super Admin, Ketua Adat, Admin Marga, Penatua, Admin Wilayah |
+| `/admin/punguan-anggota` Member punguan | Humas (mengajukan), Penatua (mengesahkan) |
+| `/admin/keuangan` Keuangan punguan | Humas (mencatat), Penatua (memvalidasi) |
 | `/admin/marga`, `/admin/punguan`, `/admin/pengguna` | Super Admin |
 
 Alur pendaftaran: kepala keluarga mendaftarkan diri, istri, dan anak → **validator keluarga** (ayah/ompung atau anak/pahompu yang sudah member) membenarkan → **penatua punguan** mengesahkan. Lihat `docs/STANDAR.md` bagian 4.2.
@@ -97,6 +100,8 @@ vendor/bin/phpunit
 | `app/Services/PartuturanService.php` | Mesin partuturan: panggilan antar dua anggota + jalur silsilah |
 | `app/Services/UsulanService.php` | Pendaftaran, usulan, kesaksian keluarga, dan verifikasi |
 | `app/Services/LingkupAdmin.php` | Lingkup Admin Wilayah (wilayah/cabang pomparan) |
+| `app/Services/PunguanService.php` | Member Punguan: pengajuan, pengesahan Penatua, nonaktif |
+| `app/Services/KeuanganService.php` | Keuangan punguan: kategori, catat, validasi, rekap iuran |
 | `app/Services/ImportService.php` | Import Excel/CSV, semua-atau-tidak-sama-sekali |
 | `public/assets/js/pohon.js` | Pohon interaktif D3 dengan lazy load per cabang |
 | `app/Services/DataPribadiCipher.php` | Enkripsi NIK/No. KK (UU PDP) |

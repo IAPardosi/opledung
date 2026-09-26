@@ -126,4 +126,36 @@ class Silsilah extends BaseController
 
         return view('silsilah/keluarga_dekat', [...$data, 'tutur' => $tutur, 'sayaId' => $user?->person_id !== null ? (int) $user->person_id : null]);
     }
+
+    /**
+     * Mapping keturunan: pohon dari Sundut 1 sampai orang yang dipilih,
+     * dengan pilihan Fokus (garis lurus saja), Keluarga, atau Lengkap.
+     */
+    public function mapping(?int $id = null): string
+    {
+        $user = $this->user();
+        $id ??= $user?->person_id !== null ? (int) $user->person_id : null;
+
+        $mode = $this->request->getGet('mode');
+        $mode = in_array($mode, SilsilahQuery::MODE_MAPPING, true) ? $mode : 'fokus';
+        $dari = $this->request->getGet('dari');
+        $dari = is_numeric($dari) ? (int) $dari : null;
+
+        $marga = $this->margaAktif();
+        if ($id === null) {
+            return view('silsilah/mapping', ['marga' => $marga, 'mode' => $mode, 'peta' => null, 'diri' => false]);
+        }
+
+        $peta = (new SilsilahQuery())->mapping($id, $mode, $dari);
+        if ($peta === null) {
+            throw PageNotFoundException::forPageNotFound('Anggota tidak ditemukan.');
+        }
+
+        return view('silsilah/mapping', [
+            'marga' => (new \App\Models\MargaModel())->find($peta['target']->marga_id) ?? $marga,
+            'mode'  => $mode,
+            'peta'  => $peta,
+            'diri'  => $user?->person_id !== null && (int) $user->person_id === $peta['target']->id,
+        ]);
+    }
 }

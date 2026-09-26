@@ -3,7 +3,7 @@
 Dokumen ini adalah acuan resmi pengembangan fase pertama. Setiap perubahan
 standar harus diperbarui di dokumen ini terlebih dahulu sebelum diterapkan di kode.
 
-Versi: 3.0 · Status: Fase 1 + pengembangan (tema Adat Modern, validasi dua lapis, punguan, Kenali Marga, mode tampilan)
+Versi: 3.1 · Status: Fase 1 + pengembangan (tema Adat Modern, validasi dua lapis, punguan, Kenali Marga, mode tampilan, mapping keturunan, member punguan & keuangan)
 
 ---
 
@@ -122,13 +122,26 @@ Versi: 3.0 · Status: Fase 1 + pengembangan (tema Adat Modern, validasi dua lapi
 - **Kenali Marga** (publik): kisah marga, bona pasogit, **leluhur sebelum marga** (4–5
   generasi, informasi sejarah, *tidak dihitung sundut*), urutan besar sampai sundut aktif,
   dan kartu sundut 1–3. Diisi Ketua Adat di Admin → Sejarah marga.
-- **Empat mode tampilan silsilah** (bisa berpindah dengan satu klik):
+- **Lima mode tampilan silsilah** (bisa berpindah dengan satu klik):
   | Mode | Isi |
   |---|---|
+  | Mapping keturunan | Pohon dari Sundut 1 (atau sundut pilihan) sampai saya/anggota yang dicari, dengan tiga pilihan kelengkapan (lihat 4B.1) |
   | Jalur saya | Garis lurus Sundut 1 → saya (ringkas: sundut tengah dilipat; lengkap: semua), dengan jumlah saudara di tiap sundut |
   | Keluarga dekat | Saya di tengah: ompung, orang tua & saudaranya, saudara, anak, pahompu, beserta partuturan |
   | Per sundut | Daftar satu generasi dengan filter dan pencarian |
   | Pohon cabang | Pohon interaktif dibuka bertahap per cabang |
+
+### 4B.1 Mapping Keturunan
+Halaman `/mapping` (publik; untuk member langsung menampilkan jalurnya sendiri, orang lain dipilih lewat pencarian).
+| Pilihan | Yang tampil |
+|---|---|
+| **Fokus saya** | Hanya garis lurus Sundut 1 → orang ini. Saudara di setiap sundut dilipat menjadi tanda **+N** yang bisa diklik untuk dibuka. Tampil menurun (atas → bawah). |
+| **Keluarga** | Garis lurus + semua saudara di setiap sundut + anak dan cucu orang ini. |
+| **Lengkap** | Semua cabang dari sundut awal sampai sundut orang ini (+1). Bila lebih dari 1.500 orang, sundut terbawah dilipat agar tetap ringan. |
+- **Mulai dari sundut**: mapping bisa dimulai dari leluhur mana pun di jalur (mis. Sundut 8).
+- Jalur disorot garis hitam tebal; orang yang dipetakan berbingkai merah.
+- Arah pohon bisa diputar (mendatar / menurun); pilihan disimpan di peramban.
+- Hanya kolom publik pohon yang dikirim (tanpa NIK, alamat, kontak).
 
 ## 4C. Tampilan (Tema "Adat Modern")
 - Palet gorga: merah `#a3161e`, hitam `#16110f`, putih; latar hangat `#f6f3f0`.
@@ -143,6 +156,38 @@ Versi: 3.0 · Status: Fase 1 + pengembangan (tema Adat Modern, validasi dua lapi
 - Isi ditulis sebagai teks sederhana (paragraf, `**tebal**`, `*miring*`, `- daftar`,
   `[teks](https://…)`); HTML dari pengguna tidak pernah dijalankan.
 - Gambar diubah ulang ke JPEG oleh server sebelum disimpan.
+
+## 4E. Data Anggota (Kontrol Status)
+- **Admin → Data anggota** (`anggota.kelola`: Super Admin, Ketua Adat, Admin Marga, Penatua, Admin Wilayah).
+- Filter: nama/kode/akun, sundut, status hidup, jenis member, punguan, punya akun web.
+- Ubah **status hidup**: hidup / meninggal (tanggal atau tahun wafat, tempat makam) / tidak diketahui.
+  Perubahan lewat PersonService (aturan Silsilah Pokok terkunci & audit log tetap berlaku).
+- Anggota yang ditandai **meninggal** otomatis diakhiri keanggotaan punguannya; riwayat keuangan tetap.
+- Penatua dan Admin Wilayah hanya melihat anggota dalam lingkupnya.
+
+## 4F. Member Marga dan Member Punguan
+| Jenis | Arti | Kewajiban punguan |
+|---|---|---|
+| **Member Marga** | Tercatat di silsilah marga (dengan atau tanpa akun web), di mana pun tinggalnya | Tidak ada |
+| **Member Punguan** | Member marga yang resmi terdaftar dan **disahkan Penatua** di satu punguan (mis. Medan) | Ada (iuran, dll.) |
+- Tabel `keanggotaan_punguan`: status `menunggu → aktif / ditolak`, lalu `aktif → nonaktif` (pindah, mundur, meninggal).
+- Pengajuan: oleh member sendiri (Profil → *Ajukan jadi Member Punguan*) atau oleh Humas → menunggu Penatua.
+  Pendaftaran oleh Penatua langsung sah. Nomor anggota otomatis per punguan (`MED-0001`).
+- Satu orang hanya boleh aktif/diajukan di **satu** punguan dalam satu waktu. Orang yang sudah meninggal tidak dapat didaftarkan.
+- Akun `users.punguan_id` tetap berarti *punguan domisili/tempat mendaftar* (untuk validasi pendaftaran),
+  **bukan** keanggotaan punguan.
+- Lencana terlihat di profil, Data anggota, dan halaman pengurus: abu-abu *Member Marga*, merah *Member Punguan · Punguan X*.
+
+## 4G. Keuangan Punguan (Sederhana)
+- Hanya untuk **Member Punguan aktif**; member marga lain tidak dapat dicatat.
+- **Kategori** diatur per punguan (Humas/Penatua): nama, jenis (*bulanan*, *tahunan*, *per peristiwa*), nominal standar opsional.
+  Contoh: Iuran Bulanan (bulanan, Rp25.000), Hamauliateon, Toktok Ripe, Sumbangan Duka.
+- **Alur**: Humas mencatat (`keuangan.catat`) → status *menunggu* → Penatua punguan memvalidasi (`keuangan.validasi`) → *sah* atau *ditolak* (wajib alasan).
+  Catatan yang dibuat Penatua sendiri langsung sah. Catatan sah tidak dapat diubah/dihapus; yang ditolak boleh dicatat ulang.
+- Iuran bulanan bisa dicatat beberapa bulan sekaligus (maks. 24); periode yang sama tidak boleh tercatat dua kali.
+- **Tampilan**: ringkasan per kategori per tahun, antrean validasi (bisa sahkan banyak sekaligus), rekap iuran 12 bulan
+  per member (sah / menunggu / belum bayar + jumlah tunggakan), riwayat per member, dan *Keuangan saya* di profil member.
+- Lingkup: Humas dan Penatua hanya punguannya sendiri; Super Admin semua punguan. Semua aksi tercatat di audit log.
 
 ## 5. Hak Lihat (Privasi)
 

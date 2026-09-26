@@ -133,6 +133,33 @@ class LingkupAdmin
     }
 
     /**
+     * Membatasi query persons hanya pada anggota dalam lingkup admin terbatas
+     * (cabang, wilayah domisili, atau member/keluarga akun punguan).
+     */
+    public function saringPerson(BaseBuilder $builder, User $user, string $alias = 'persons'): void
+    {
+        if (! $this->terbatas($user)) {
+            return;
+        }
+
+        $syarat = [];
+        foreach ($this->daftar($user->id) as $l) {
+            $nilai = $this->db->escape($l['nilai']);
+            if ($l['jenis'] === 'cabang') {
+                $syarat[] = "EXISTS (SELECT 1 FROM person_paths lp WHERE lp.ancestor_id = {$nilai} AND lp.descendant_id = {$alias}.id)";
+            } elseif ($l['jenis'] === 'wilayah') {
+                $kode     = $this->db->escapeLikeString($l['nilai']);
+                $syarat[] = "({$alias}.kabupaten_kode = {$nilai} OR {$alias}.kabupaten_kode LIKE '{$kode}.%' OR {$alias}.provinsi_kode = {$nilai})";
+            } elseif ($l['jenis'] === 'punguan') {
+                $ids      = $this->personPunguan((int) $l['nilai']);
+                $syarat[] = $ids === [] ? '1 = 0' : "{$alias}.id IN (" . implode(',', $ids) . ')';
+            }
+        }
+
+        $builder->where($syarat === [] ? '1 = 0' : '(' . implode(' OR ', $syarat) . ')', null, false);
+    }
+
+    /**
      * Apakah usulan berada dalam lingkup admin (punguan pengusul, wilayah, atau cabang)?
      *
      * @param array<string, mixed> $usulan
@@ -172,6 +199,26 @@ class LingkupAdmin
             ->where('pp.depth <=', 2)
             ->groupStart()->whereIn('pp.ancestor_id', $personIds)->orWhereIn('pp.descendant_id', $personIds)->groupEnd()
             ->countAllResults() > 0;
+    }
+
+    /**
+     * Orang dalam lingkup punguan: member punguannya, serta keluarga ≤2 sundut dari akun yang terdaftar di punguan itu.
+     *
+     * @return list<int>
+     */
+    private function personPunguan(int $punguanId): array
+    {
+        $member = array_column($this->db->table('keanggotaan_punguan')->select('person_id')->where('punguan_id', $punguanId)->get()->getResultArray(), 'person_id');
+        $akun   = array_column($this->db->table('users')->select('person_id')->where('punguan_id', $punguanId)->where('person_id IS NOT NULL', null, false)->get()->getResultArray(), 'person_id');
+
+        $kerabat = [];
+        if ($akun !== []) {
+            $turun   = $this->db->table('person_paths')->select('descendant_id AS id')->whereIn('ancestor_id', $akun)->where('depth <=', 2)->get()->getResultArray();
+            $naik    = $this->db->table('person_paths')->select('ancestor_id AS id')->whereIn('descendant_id', $akun)->where('depth <=', 2)->get()->getResultArray();
+            $kerabat = array_column([...$turun, ...$naik], 'id');
+        }
+
+        return array_values(array_unique(array_map('intval', [...$member, ...$akun, ...$kerabat])));
     }
 
     /**

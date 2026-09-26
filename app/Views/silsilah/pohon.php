@@ -39,6 +39,7 @@
                 <div class="pohon-kontrol">
                     <button class="btn btn-light btn-sm border" id="zoomMasuk" title="Perbesar"><i class="bi bi-plus-lg"></i></button>
                     <button class="btn btn-light btn-sm border" id="zoomKeluar" title="Perkecil"><i class="bi bi-dash-lg"></i></button>
+                    <button class="btn btn-light btn-sm border" id="putarArah" title="Ubah arah: mendatar / menurun"><i class="bi bi-arrow-repeat"></i></button>
                     <button class="btn btn-light btn-sm border" id="zoomReset" title="Posisi awal"><i class="bi bi-arrows-angle-contract"></i></button>
                 </div>
                 <div class="pohon-legenda">

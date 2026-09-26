@@ -14,6 +14,9 @@ if ($isAdmin && $user->can('silsilah.verify')) {
     (new \App\Services\LingkupAdmin())->saringUsulan($q->builder(), $user);
     $pending = $q->countAllResults();
 }
+// Pengesahan member punguan dan validasi keuangan yang menunggu Penatua.
+$tugasPunguan = $isAdmin ? (new \App\Services\PunguanService())->jumlahMenunggu($user) + (new \App\Services\KeuanganService())->jumlahMenunggu($user) : 0;
+$pending += $tugasPunguan;
 if ($user?->person_id !== null && ($user?->can('silsilah.view') ?? false)) {
     $tugas = (new \App\Services\UsulanService())->jumlahTugasKeluarga($user);
 }
@@ -49,9 +52,10 @@ $aktif = static fn (string ...$awal): string => array_filter($awal, static fn ($
                 <ul class="navbar-nav me-auto gap-lg-1">
                     <li class="nav-item"><a class="nav-link<?= $aktif('') ?>" href="<?= site_url('/') ?>">Beranda</a></li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle<?= $aktif('silsilah', 'generasi', 'keluarga-dekat', 'garis') ?>" href="#" data-bs-toggle="dropdown">Silsilah</a>
+                        <a class="nav-link dropdown-toggle<?= $aktif('silsilah', 'generasi', 'keluarga-dekat', 'garis', 'mapping') ?>" href="#" data-bs-toggle="dropdown">Silsilah</a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="<?= site_url('garis') ?>"><i class="bi bi-signpost-split me-2"></i>Jalur saya</a></li>
+                            <li><a class="dropdown-item" href="<?= site_url('mapping') ?>"><i class="bi bi-diagram-2 me-2"></i>Mapping keturunan</a></li>
                             <li><a class="dropdown-item" href="<?= site_url('keluarga-dekat') ?>"><i class="bi bi-people me-2"></i>Keluarga dekat</a></li>
                             <li><a class="dropdown-item" href="<?= site_url('generasi') ?>"><i class="bi bi-list-ol me-2"></i>Per sundut</a></li>
                             <li><a class="dropdown-item" href="<?= site_url('silsilah') ?>"><i class="bi bi-diagram-3 me-2"></i>Pohon cabang</a></li>
@@ -89,6 +93,19 @@ $aktif = static fn (string ...$awal): string => array_filter($awal, static fn ($
                             <?php if ($user->can('partuturan.kelola')) : ?>
                             <li><a class="dropdown-item" href="<?= site_url('admin/partuturan') ?>"><i class="bi bi-chat-quote me-2"></i>Istilah partuturan</a></li>
                             <li><a class="dropdown-item" href="<?= site_url('admin/sejarah') ?>"><i class="bi bi-journal-text me-2"></i>Sejarah marga</a></li>
+                            <?php endif ?>
+                            <?php if ($user->can('anggota.kelola')) : ?>
+                            <li><a class="dropdown-item" href="<?= site_url('admin/anggota') ?>"><i class="bi bi-person-lines-fill me-2"></i>Data anggota</a></li>
+                            <?php endif ?>
+                            <?php if ($user->can('punguan.anggota') || $user->can('keuangan.catat')) : ?>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Punguan</h6></li>
+                            <?php endif ?>
+                            <?php if ($user->can('punguan.anggota')) : ?>
+                            <li><a class="dropdown-item" href="<?= site_url('admin/punguan-anggota') ?>"><i class="bi bi-people-fill me-2"></i>Member punguan <?php $mp = (new \App\Services\PunguanService())->jumlahMenunggu($user); if ($mp > 0) : ?><span class="badge text-bg-danger"><?= $mp ?></span><?php endif ?></a></li>
+                            <?php endif ?>
+                            <?php if ($user->can('keuangan.catat')) : ?>
+                            <li><a class="dropdown-item" href="<?= site_url('admin/keuangan') ?>"><i class="bi bi-wallet2 me-2"></i>Keuangan punguan <?php $kv = (new \App\Services\KeuanganService())->jumlahMenunggu($user); if ($kv > 0) : ?><span class="badge text-bg-danger"><?= $kv ?></span><?php endif ?></a></li>
                             <?php endif ?>
                             <?php if ($user->can('konten.kelola')) : ?>
                             <li><hr class="dropdown-divider"></li>
@@ -170,7 +187,7 @@ $aktif = static fn (string ...$awal): string => array_filter($awal, static fn ($
 
 <nav class="nav-bawah" aria-label="Navigasi utama">
     <a href="<?= site_url('/') ?>" class="<?= trim($aktif('')) ?>"><i class="bi bi-house"></i>Beranda</a>
-    <a href="<?= site_url('garis') ?>" class="<?= trim($aktif('silsilah', 'generasi', 'keluarga-dekat', 'garis')) ?>"><i class="bi bi-diagram-3"></i>Silsilah</a>
+    <a href="<?= site_url('garis') ?>" class="<?= trim($aktif('silsilah', 'generasi', 'keluarga-dekat', 'garis', 'mapping')) ?>"><i class="bi bi-diagram-3"></i>Silsilah</a>
     <a href="<?= site_url('hubungan') ?>" class="<?= trim($aktif('hubungan', 'partuturan')) ?>"><i class="bi bi-arrow-left-right"></i>Tutur</a>
     <a href="<?= site_url('berita') ?>" class="<?= trim($aktif('berita', 'kegiatan', 'punguan')) ?>"><i class="bi bi-calendar-event"></i>Kabar</a>
     <a href="<?= site_url($user ? ($isCalon ? 'pendaftaran' : 'profil-saya') : 'login') ?>" class="<?= trim($aktif('profil-saya', 'pendaftaran', 'login', 'anggota')) ?>"><i class="bi bi-person"></i>Akun</a>
