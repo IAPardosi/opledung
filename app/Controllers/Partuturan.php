@@ -76,6 +76,7 @@ class Partuturan extends BaseController
             'keterangan' => $h['keterangan'],
             'balik'      => $h['balik']['sebutan'],
             'rincian'    => $h['rincian'],
+            'dalihan'    => $h['dalihan'],
         ]);
     }
 }

@@ -88,6 +88,11 @@ $kembali      = ($person?->id ?? $induk?->id) ? site_url('anggota/' . ($person?-
                 <label class="form-label" for="gelar_adat">Gelar adat / nama sapaan</label>
                 <input class="form-control" id="gelar_adat" name="gelar_adat" value="<?= esc($nilai('gelar_adat')) ?>" maxlength="150" placeholder="mis. Op. …, Ama ni …">
             </div>
+            <div class="col-md-6">
+                <label class="form-label" for="huta">Huta / kampung asal</label>
+                <input class="form-control" id="huta" name="huta" value="<?= esc($nilai('huta')) ?>" maxlength="150" placeholder="mis. Lumban Motung, Tapanuli Utara">
+                <div class="form-text">Bona pasogit keluarga, bukan alamat domisili. Membantu membedakan orang bernama sama.</div>
+            </div>
             <?php if ($tampilMarga) : ?>
             <div class="col-md-6">
                 <label class="form-label" for="marga_nama">Marga <?= $mode === 'pasangan' ? '<span class="text-danger">*</span>' : '' ?></label>

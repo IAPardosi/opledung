@@ -30,7 +30,7 @@ $aktif = static fn (string ...$awal): string => array_filter($awal, static fn ($
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title><?= trim($this->renderSection('title')) ?: 'Silsilah' ?> · Tarombo <?= esc($margaNav['nama'] ?? 'Marga') ?></title>
-    <meta name="theme-color" content="#f6f3f0">
+    <meta name="theme-color" content="#0f0c0b">
     <link rel="icon" href="<?= base_url('assets/img/logo.svg') ?>" type="image/svg+xml">
     <link href="<?= base_url('assets/vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
     <link href="<?= base_url('assets/vendor/bootstrap-icons/bootstrap-icons.min.css') ?>" rel="stylesheet">
@@ -123,6 +123,12 @@ $aktif = static fn (string ...$awal): string => array_filter($awal, static fn ($
                     <?php endif ?>
                 </ul>
                 <ul class="navbar-nav align-items-lg-center gap-1">
+                    <li class="nav-item cari-nav">
+                        <div class="position-relative">
+                            <i class="bi bi-search" aria-hidden="true"></i>
+                            <input type="search" class="form-control" placeholder="Cari anggota…" aria-label="Cari anggota: nama, kode, atau anak ni …" data-saran="<?= $user !== null && $user->can('silsilah.view') ? 'profil' : 'mapping' ?>">
+                        </div>
+                    </li>
                     <?php if ($user !== null) : ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
@@ -194,6 +200,8 @@ $aktif = static fn (string ...$awal): string => array_filter($awal, static fn ($
 </nav>
 
 <script src="<?= base_url('assets/vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
+<script>window.SILSILAH_URL = window.SILSILAH_URL || <?= json_encode(rtrim(site_url('/'), '/') . '/') ?>;</script>
+<script src="<?= base_url('assets/js/saran-orang.js') ?>"></script>
 <?= $this->renderSection('pageScripts') ?>
 </body>
 </html>

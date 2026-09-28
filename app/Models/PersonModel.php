@@ -16,7 +16,7 @@ class PersonModel extends Model
     protected $useTimestamps  = true;
     protected $allowedFields  = [
         'marga_id', 'kode_anggota', 'nomor_urut', 'generasi_ke', 'garis',
-        'induk_id', 'ayah_id', 'ibu_id', 'nama_ibu', 'urutan_anak', 'marga_nama',
+        'induk_id', 'ayah_id', 'ibu_id', 'nama_ibu', 'urutan_anak', 'marga_nama', 'huta',
         'nama_lengkap', 'nama_panggilan', 'gelar_adat', 'jenis_kelamin',
         'tempat_lahir', 'tanggal_lahir', 'tahun_lahir', 'agama', 'status_perkawinan',
         'pendidikan_terakhir', 'pekerjaan', 'golongan_darah', 'kewarganegaraan',
@@ -34,7 +34,7 @@ class PersonModel extends Model
      * @var list<string>
      */
     public const KOLOM_PROFIL = [
-        'nama_lengkap', 'nama_panggilan', 'gelar_adat', 'nama_ibu', 'marga_nama',
+        'nama_lengkap', 'nama_panggilan', 'gelar_adat', 'nama_ibu', 'marga_nama', 'huta',
         'tempat_lahir', 'tanggal_lahir', 'tahun_lahir', 'agama', 'status_perkawinan',
         'pendidikan_terakhir', 'pekerjaan', 'golongan_darah', 'kewarganegaraan',
         'alamat_jalan', 'rt', 'rw', 'desa_kode', 'kecamatan_kode', 'kabupaten_kode',

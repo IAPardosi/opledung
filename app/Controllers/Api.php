@@ -28,24 +28,14 @@ class Api extends BaseController
 
     public function cari(): ResponseInterface
     {
-        $q = trim((string) $this->request->getGet('q'));
-        if (mb_strlen($q) < 2) {
-            return $this->response->setJSON([]);
-        }
+        $user    = auth()->loggedIn() ? auth()->user() : null;
+        $lengkap = $user !== null && $user->can('silsilah.view');
 
-        $rows = (new PersonModel())
-            ->daftar((int) $this->margaAktif()['id'], null, null, $q)
-            ->asArray()
-            ->findAll(15);
-
-        return $this->response->setJSON(array_map(static fn (array $r): array => [
-            'id'           => (int) $r['id'],
-            'kode_anggota' => $r['kode_anggota'],
-            'nama_lengkap' => $r['nama_lengkap'],
-            'generasi_ke'  => (int) $r['generasi_ke'],
-            'garis'        => $r['garis'],
-            'nama_induk'   => $r['nama_induk'],
-        ], $rows));
+        return $this->response->setJSON((new \App\Services\PencarianService())->saran(
+            (int) $this->margaAktif()['id'],
+            (string) $this->request->getGet('q'),
+            $lengkap,
+        ));
     }
 
     public function wilayah(): ResponseInterface

@@ -6,7 +6,7 @@
     <div class="row g-0 card overflow-hidden flex-row" style="border-radius: 32px">
         <div class="col-md-5 kartu-gelap p-4 p-lg-5 d-flex flex-column justify-content-between" style="min-height: 320px">
             <div>
-                <div class="horas" style="color:var(--merah-terang);font-weight:700;letter-spacing:.12em;font-size:.8rem;text-transform:uppercase">Horas!</div>
+                <div class="horas" style="color:var(--emas);font-weight:700;letter-spacing:.12em;font-size:.8rem;text-transform:uppercase">Horas!</div>
                 <h1 class="h3 mt-2">Masuk ke Tarombo</h1>
                 <p class="small" style="color:#e2d6cb">Lihat profil keluarga, partuturan Anda dengan sesama anggota, dan ikut memberi kesaksian silsilah.</p>
             </div>

@@ -106,6 +106,11 @@ class PersonService
         $pasanganId = isset($data['pasangan_id']) && $data['pasangan_id'] !== '' ? (int) $data['pasangan_id'] : null;
         unset($data['pasangan_id']);
 
+        // Huta (bona pasogit) diwarisi dari orang tua bila tidak diisi.
+        if (trim((string) ($data['huta'] ?? '')) === '' && $induk->huta) {
+            $data['huta'] = $induk->huta;
+        }
+
         $data = $this->siapkanData($data, true);
 
         if ($induk->garis === 'utama') {

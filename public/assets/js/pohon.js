@@ -17,37 +17,21 @@
 
     // Pencarian: buka orang yang dipilih sebagai pusat pohon atau mapping.
     const input = document.getElementById('cariPohon');
-    const hasil = document.getElementById('hasilCari');
-    if (input && hasil) {
+    if (input && window.SaranOrang) {
+        document.getElementById('hasilCari')?.remove();
         const akhiran = MAPPING ? `?mode=${encodeURIComponent(MAPPING.mode)}` : '';
-        let timer;
-        input.addEventListener('input', () => {
-            clearTimeout(timer);
-            const q = input.value.trim();
-            if (q.length < 2) {
-                hasil.innerHTML = '';
-                return;
-            }
-            timer = setTimeout(async () => {
-                const res = await fetch(`${S.baseUrl}api/cari?q=${encodeURIComponent(q)}`);
-                const rows = await res.json();
-                hasil.innerHTML = rows.length === 0
-                    ? '<div class="list-group-item small text-body-secondary">Tidak ditemukan.</div>'
-                    : rows.map((r) => `
-                        <a class="list-group-item list-group-item-action small" href="${S.baseUrl}${urlCari}${r.id}${akhiran}">
-                            <div class="fw-medium">${esc(r.nama_lengkap)} <span class="text-body-secondary">· G${r.generasi_ke}</span></div>
-                            <div class="text-body-secondary">${esc(r.kode_anggota)}${r.nama_induk ? ' · anak dari ' + esc(r.nama_induk) : ''}</div>
-                        </a>`).join('');
-            }, 250);
-        });
-        document.addEventListener('click', (e) => {
-            if (!hasil.contains(e.target) && e.target !== input) hasil.innerHTML = '';
-        });
+        window.SaranOrang.pasang(input, {href: (r) => `${S.baseUrl}${urlCari}${r.id}${akhiran}`});
     }
 
     if (!S.data) return;
 
-    const LEBAR = 190, TINGGI = 52, JARAK_X = 240, JARAK_Y = 64;
+    const LEBAR = 210, TINGGI = 52, BARIS = 17, JARAK_X = 260, JARAK_Y = 64;
+    // Kotak keluarga: tinggi bertambah satu baris per pasangan (maks. 3 baris + "+N lagi").
+    const tinggi = (d) => {
+        const n = d && d.data && d.data.pasangan ? d.data.pasangan.length : 0;
+        return TINGGI + BARIS * Math.min(n, 3) + (n > 3 ? 14 : 0);
+    };
+    const isiKartu = {utama: '#ffffff', boru: '#fbf3df', anak_boru: '#f6f0e8'};
     const css = getComputedStyle(document.documentElement);
     const warna = {
         utama: css.getPropertyValue('--garis-utama').trim(),
@@ -91,9 +75,11 @@
     } catch (e) { /* penyimpanan tidak tersedia */ }
     let tree;
     const pos = (x, y) => arah === 'kanan' ? `translate(${y},${x})` : `translate(${x - LEBAR / 2},${y})`;
-    const posToggle = () => arah === 'kanan' ? `translate(${LEBAR},0)` : `translate(${LEBAR / 2},${TINGGI / 2})`;
+    const posToggle = (d) => arah === 'kanan' ? `translate(${LEBAR},0)` : `translate(${LEBAR / 2},${tinggi(d) / 2})`;
     function aturArah() {
-        tree = d3.tree().nodeSize(arah === 'kanan' ? [JARAK_Y, JARAK_X] : [LEBAR + 22, 104]);
+        tree = arah === 'kanan'
+            ? d3.tree().nodeSize([JARAK_Y, JARAK_X]).separation((a, b) => (a.parent === b.parent ? 1 : 1.2) * ((tinggi(a) + tinggi(b)) / 2 + 12) / JARAK_Y)
+            : d3.tree().nodeSize([LEBAR + 22, 150]).separation((a, b) => (a.parent === b.parent ? 1 : 1.15));
     }
     aturArah();
 
@@ -135,16 +121,37 @@
             .on('click', (e, d) => pilih(d));
 
         masuk.append('rect').attr('class', 'kartu')
-            .attr('x', 0).attr('y', -TINGGI / 2).attr('width', LEBAR).attr('height', TINGGI)
-            .attr('fill', '#fff')
+            .attr('x', 0).attr('y', (d) => -tinggi(d) / 2).attr('width', LEBAR).attr('height', tinggi)
+            .attr('rx', 10)
+            .attr('fill', (d) => isiKartu[d.data.garis] || '#fff')
             .attr('stroke', (d) => warna[d.data.garis] || '#999');
         masuk.append('rect')
-            .attr('x', 0).attr('y', -TINGGI / 2).attr('width', 6).attr('height', TINGGI)
+            .attr('x', 0).attr('y', (d) => -tinggi(d) / 2).attr('width', 6).attr('height', tinggi)
             .attr('fill', (d) => warna[d.data.garis] || '#999');
-        masuk.append('text').attr('class', 'nama').attr('x', 14).attr('y', -5)
-            .text((d) => potong(d.data.nama_lengkap, 24));
-        masuk.append('text').attr('class', 'sub').attr('x', 14).attr('y', 12)
-            .text((d) => `G${d.data.generasi_ke} · ${d.data.kode_anggota}${d.data.status_hidup === 'meninggal' ? ' · †' : ''}`);
+        // Penanda bentuk (tidak hanya warna): ■ anak, ◆ boru, ● anak boru.
+        masuk.append('path').attr('class', 'penanda')
+            .attr('transform', (d) => `translate(19,${-tinggi(d) / 2 + 17})`)
+            .attr('d', (d) => d.data.garis === 'boru' ? 'M0 -5 L5 0 L0 5 L-5 0 Z' : (d.data.garis === 'anak_boru' ? 'M-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0' : 'M-4 -4 H4 V4 H-4 Z'))
+            .attr('fill', (d) => warna[d.data.garis] || '#999');
+        masuk.append('text').attr('class', 'nama').attr('x', 30).attr('y', (d) => -tinggi(d) / 2 + 21)
+            .text((d) => potong(d.data.nama_lengkap, 25));
+        masuk.append('text').attr('class', 'sub').attr('x', 14).attr('y', (d) => -tinggi(d) / 2 + 39)
+            .text((d) => `G${d.data.generasi_ke} · ${d.data.kode_anggota}${d.data.status_hidup === 'meninggal' ? ' · †' : ''}${d.data.ibu_ke ? ' · dari istri ' + d.data.ibu_ke : ''}`);
+        masuk.each(function (d) {
+            const ps = d.data.pasangan || [];
+            const g0 = d3.select(this);
+            const y0 = -tinggi(d) / 2 + 39;
+            ps.slice(0, 3).forEach((p, i) => {
+                const y = y0 + BARIS * (i + 1);
+                g0.append('circle').attr('class', 'penanda-pasangan').attr('cx', 19).attr('cy', y - 4).attr('r', 3.5);
+                const peran = d.data.jenis_kelamin === 'P' ? 'Suami' : (ps.length > 1 ? `Istri ${p.ke}` : 'Istri');
+                g0.append('text').attr('class', 'pasangan').attr('x', 30).attr('y', y)
+                    .text(potong(`${peran} · ${p.nama}${p.status_hidup === 'meninggal' ? ' †' : ''}`, 30));
+            });
+            if (ps.length > 3) {
+                g0.append('text').attr('class', 'pasangan').attr('x', 30).attr('y', y0 + BARIS * 3 + 14).text(`+${ps.length - 3} pasangan lagi`);
+            }
+        });
 
         const tombol = masuk.append('g').attr('class', 'toggle')
             .attr('transform', posToggle)
@@ -178,7 +185,7 @@
 
     function diagonal(s, t) {
         if (arah === 'bawah') {
-            const sy = s.y + TINGGI / 2, ty = t.y - TINGGI / 2;
+            const sy = s.y + tinggi(s) / 2, ty = t.y - tinggi(t) / 2;
             return `M${s.x},${sy} C${s.x},${(sy + ty) / 2} ${t.x},${(sy + ty) / 2} ${t.x},${ty}`;
         }
         const sx = s.y + LEBAR, tx = t.y;
@@ -246,6 +253,7 @@
                     <dt>Generasi</dt><dd>${p.generasi_ke}</dd>
                     <dt>Status</dt><dd>${hidup}</dd>
                     ${p.jumlah_anak !== undefined ? `<dt>Jumlah anak</dt><dd>${p.jumlah_anak}</dd>` : ''}
+                    ${(p.pasangan || []).map((ps) => `<dt>${p.jenis_kelamin === 'P' ? 'Suami' : ((p.pasangan.length > 1) ? 'Istri ' + ps.ke : 'Istri')}</dt><dd>${esc(ps.nama)}${ps.status_hidup === 'meninggal' ? ' †' : ''}</dd>`).join('')}
                 </dl>
                 <div id="tuturPanel"></div>
                 <div class="d-grid gap-2">
@@ -269,9 +277,12 @@
             const el = document.getElementById('tuturPanel');
             if (!el) return;
             el.innerHTML = t.tersedia
-                ? `<div class="tutur mb-3"><div class="ipon-kecil"></div><div class="isi py-2">
-                        <div class="label">Anda memanggil</div><div class="sebutan" style="font-size:1.4rem">${esc(t.sebutan)}</div>
-                        <div class="ket small">Ia memanggil Anda: <b class="text-white">${esc(t.balik)}</b></div></div></div>`
+                ? `<div class="tutur mb-3"><div class="isi py-3">
+                        <div class="label">Anda memanggil</div><div class="sebutan" style="font-size:1.6rem">${esc(t.sebutan)}</div>
+                        <div class="ket small">Ia memanggil Anda: <b class="text-emas-terang">${esc(t.balik)}</b></div>
+                        ${t.keterangan ? `<div class="ket small mt-2">${esc(t.keterangan)}</div>` : ''}
+                        ${t.dalihan ? `<div class="mt-2"><span class="chip-dnt aktif">${esc(t.dalihan.nama)}</span><div class="ket small mt-1 fst-italic">${esc(t.dalihan.semboyan)}</div></div>` : ''}
+                    </div></div>`
                 : `<p class="small text-teks-2">${esc(t.pesan)}</p>`;
         } catch (e) { /* panel partuturan bersifat tambahan */ }
     }
@@ -293,7 +304,7 @@
             if (arah === 'bawah') {
                 // Orang terpilih di bagian bawah, leluhur di atasnya.
                 svg.transition().duration(300).call(zoom.transform, d3.zoomIdentity
-                    .translate(box.width / 2 - target.x * skala, box.height - (TINGGI + 40) * skala - target.y * skala).scale(skala));
+                    .translate(box.width / 2 - target.x * skala, box.height - (tinggi(target) / 2 + 60) * skala - target.y * skala).scale(skala));
                 return;
             }
             // Orang terpilih di sisi kanan, jalur ke leluhur mengalir ke kiri.
@@ -308,9 +319,10 @@
     function batas() {
         const n = root.descendants();
         const xs = n.map((d) => arah === 'kanan' ? d.y : d.x - LEBAR / 2);
-        const ys = n.map((d) => arah === 'kanan' ? d.x - TINGGI / 2 : d.y - TINGGI / 2);
+        const ys = n.map((d) => (arah === 'kanan' ? d.x : d.y) - tinggi(d) / 2);
+        const ye = n.map((d) => (arah === 'kanan' ? d.x : d.y) + tinggi(d) / 2);
         const x = Math.min(...xs), y = Math.min(...ys);
-        return {x, y, width: Math.max(...xs) + LEBAR + 20 - x, height: Math.max(...ys) + TINGGI + 20 - y};
+        return {x, y, width: Math.max(...xs) + LEBAR + 20 - x, height: Math.max(...ye) + 20 - y};
     }
 
     function lihatSemua() {

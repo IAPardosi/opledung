@@ -3,7 +3,7 @@
 Dokumen ini adalah acuan resmi pengembangan fase pertama. Setiap perubahan
 standar harus diperbarui di dokumen ini terlebih dahulu sebelum diterapkan di kode.
 
-Versi: 3.1 · Status: Fase 1 + pengembangan (tema Adat Modern, validasi dua lapis, punguan, Kenali Marga, mode tampilan, mapping keturunan, member punguan & keuangan)
+Versi: 3.2 · Status: Fase 1 + pengembangan (tema Adat Modern, validasi dua lapis, punguan, Kenali Marga, mode tampilan, mapping keturunan, member punguan & keuangan, tema Ulos Emas Terang, kotak keluarga, huta, saran pencarian, Dalihan Na Tolu)
 
 ---
 
@@ -143,11 +143,46 @@ Halaman `/mapping` (publik; untuk member langsung menampilkan jalurnya sendiri, 
 - Arah pohon bisa diputar (mendatar / menurun); pilihan disimpan di peramban.
 - Hanya kolom publik pohon yang dikirim (tanpa NIK, alamat, kontak).
 
-## 4C. Tampilan (Tema "Adat Modern")
-- Palet gorga: merah `#a3161e`, hitam `#16110f`, putih; latar hangat `#f6f3f0`.
-- Tipografi: Bricolage Grotesque (judul) dan Figtree (isi), disimpan di server sendiri.
-- Navigasi kapsul melayang di atas; **navigasi bawah** di HP (Beranda, Silsilah, Tutur, Kabar, Akun).
-- Kartu bento, sudut membulat, ornamen gorga hanya sebagai aksen tipis.
+## 4C. Tampilan (Tema "Ulos Emas Terang")
+- Gabungan mockup A (hitam-emas, serif) dan B (permukaan putih-gading).
+- Warna: hitam pekat `#0f0c0b` untuk navigasi, hero, dan kartu tutur; **emas ulos** `#c9a24a` hanya sebagai aksen
+  (garis aktif, angka, label, tombol sekunder); merah gorga `#a3161e` untuk aksi utama; isi di atas putih dan gading `#f7f3ec`.
+- Teks emas di atas latar terang memakai emas tua `#7c5c16` agar kontras cukup.
+- Tipografi: **Fraunces** (serif, judul dan angka) dan **Figtree** (isi), disimpan di server sendiri.
+- Navigasi kapsul hitam dengan pencarian anggota; **navigasi bawah** di HP (Beranda, Silsilah, Tutur, Kabar, Akun).
+- Pembeda garis tidak hanya warna, tetapi juga bentuk: ■ anak (garis utama, merah), ◆ boru (emas),
+  ● anak boru (cokelat), ○ istri/suami (abu-abu), agar tetap jelas bagi buta warna dan saat dicetak.
+
+### 4C.1 Kotak Keluarga
+- Setiap kotak di pohon/mapping memuat orangnya **dan pasangannya**; istri boleh lebih dari satu (Istri 1, Istri 2, …
+  sesuai urutan pernikahan); maksimal 3 baris, sisanya "+N pasangan lagi".
+- Anak dari ayah beristri lebih dari satu diberi keterangan "dari istri N".
+- Halaman profil memuat **Kotak keluarga**: pasangan, lalu anak **dikelompokkan per ibu**, dengan tombol
+  Tambah/Usulkan istri (suami) dan anak. Form tambah anak memilih ibunya.
+
+### 4C.2 Huta dan Saran Pencarian
+- Kolom `persons.huta` = kampung asal/bona pasogit (bukan domisili). Anak mewarisi huta orang tuanya bila tidak diisi.
+- Pencarian (header, beranda, pohon, mapping, dan semua pemilih orang) menampilkan kartu saran:
+  foto/inisial berbingkai warna garis, nama (kata yang cocok disorot), sundut, "anak ni … · pahompu ni …",
+  huta, domisili, dan lencana Member Punguan.
+- Mengerti: nama/gelar (awalan kata), kode anggota (boleh sebagian), "anak ni X" / "boru ni X",
+  nama + huta/kota ("Hotman Medan"), dan salah ketik ringan (bunyi mirip, mis. "Hotmen").
+- Nama kembar ditandai dan pembedanya (ayah, sundut, huta) ditebalkan. Bisa dipakai dengan ↑ ↓ Enter Esc.
+- Privasi: tamu hanya menerima nama, sundut, garis, kode, dan nama orang tua; foto, huta, domisili,
+  dan punguan hanya untuk member terverifikasi.
+
+### 4C.3 Kartu Tutur dan Dalihan Na Tolu
+- Kartu tutur berisi: sebutan (besar), sebutan balik, penjelasan, jalur silsilah dengan titik temu, dan
+  **posisi Dalihan Na Tolu** orang itu bagi pengguna, beserta artinya dan semboyannya.
+- Posisi dihitung dari garis keduanya:
+  | Pengguna | Orang lain | Posisi |
+  |---|---|---|
+  | Garis utama / istri garis utama | Garis utama / istri garis utama | Dongan tubu |
+  | Garis utama / istri garis utama | Boru, suami boru, anak boru | Boru |
+  | Boru (sudah menikah) | Garis utama / istri garis utama | Hula-hula |
+  | Anak boru | Garis utama, boru, istri garis utama | Hula-hula |
+  | Suami boru | Garis utama, istri garis utama, boru | Hula-hula |
+- Kombinasi lain ditampilkan "belum dapat ditentukan, tanyakan kepada Ketua Adat".
 
 ## 4D. Kanal Informasi
 - **Berita**: kategori berita, pengumuman, sukacita, dukacita; status draf/terbit.

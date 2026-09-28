@@ -5,7 +5,7 @@
 <div class="container py-4" style="max-width: 1000px">
     <div class="row g-0 card overflow-hidden flex-row" style="border-radius: 32px">
         <div class="col-md-5 kartu-gelap p-4 p-lg-5">
-            <div class="horas" style="color:var(--merah-terang);font-weight:700;letter-spacing:.12em;font-size:.8rem;text-transform:uppercase">Kepala keluarga</div>
+            <div class="horas" style="color:var(--emas);font-weight:700;letter-spacing:.12em;font-size:.8rem;text-transform:uppercase">Kepala keluarga</div>
             <h1 class="h3 mt-2">Daftarkan keluarga Anda</h1>
             <p class="small" style="color:#e2d6cb">Pendaftaran terdiri dari tiga langkah:</p>
             <ol class="small ps-3" style="color:#e2d6cb">

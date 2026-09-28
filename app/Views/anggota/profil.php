@@ -89,11 +89,20 @@ $orangKecil = static function ($o, ?string $ket = null): string {
 
     <div class="row g-4">
         <div class="col-lg-7">
+            <?= view('partials/kotak_keluarga', [
+                'p'             => $p,
+                'pasangan'      => $pasangan,
+                'anak'          => $anak,
+                'bolehPasangan' => $p->isAnggotaGarisMarga() && ($kelola || $bolehUsul),
+                'bolehAnak'     => $p->bisaPunyaAnak() && ($kelolaAnak || $bolehUsul),
+                'langsung'      => $kelola,
+            ]) ?>
             <div class="card mb-4">
                 <div class="card-header fw-semibold">Data Pribadi</div>
                 <div class="card-body">
                     <dl class="row data-profil mb-0">
                         <?= $baris('Jenis kelamin', $labelJk) ?>
+                        <?= $baris('Huta (kampung asal)', $p->huta) ?>
                         <?= $baris('Tempat lahir', $p->tempat_lahir) ?>
                         <?= $baris('Tanggal lahir', $p->tanggal_lahir ? tanggal_indo($p->tanggal_lahir) : ($p->tahun_lahir ? 'Tahun ' . $p->tahun_lahir : null)) ?>
                         <?= $baris('Anak ke-', $p->urutan_anak ? (string) $p->urutan_anak : null) ?>
@@ -205,39 +214,6 @@ $orangKecil = static function ($o, ?string $ket = null): string {
                     <?php if (! $ayah && ! $ibu) : ?><div class="list-group-item text-body-secondary small"><?= $p->generasi_ke === 1 && $p->garis === 'utama' ? 'Leluhur awal marga.' : 'Tidak tercatat.' ?></div><?php endif ?>
                 </div>
             </div>
-
-            <?php if ($p->garis !== 'anak_boru') : ?>
-            <div class="card mb-4">
-                <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
-                    <span><?= $p->jenis_kelamin === 'L' ? 'Istri' : 'Suami' ?></span>
-                    <?php if ($p->isAnggotaGarisMarga() && ($kelola || $bolehUsul)) : ?>
-                        <a class="btn btn-sm btn-outline-secondary" href="<?= site_url('anggota/' . $p->id . '/tambah-pasangan') ?>"><i class="bi bi-plus-lg"></i> <?= $kelola ? 'Tambah' : 'Usulkan' ?></a>
-                    <?php endif ?>
-                </div>
-                <div class="list-group list-group-flush daftar-orang">
-                    <?php foreach ($pasangan as $ps) : ?>
-                        <?= $orangKecil($ps, trim(($ps['marga_nama'] ? 'Marga ' . $ps['marga_nama'] : '') . (count($pasangan) > 1 ? ' · pernikahan ke-' . $ps['pernikahan_ke'] : ''), ' ·')) ?>
-                    <?php endforeach ?>
-                    <?php if ($pasangan === []) : ?><div class="list-group-item text-body-secondary small">Belum tercatat.</div><?php endif ?>
-                </div>
-            </div>
-            <?php endif ?>
-
-            <?php if ($p->bisaPunyaAnak()) : ?>
-            <div class="card mb-4">
-                <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
-                    <span>Anak (<?= count($anak) ?>)</span>
-                    <?php if ($kelolaAnak || $bolehUsul) : ?>
-                        <a class="btn btn-sm btn-outline-secondary" href="<?= site_url('anggota/' . $p->id . '/tambah-anak') ?>"><i class="bi bi-plus-lg"></i> <?= $kelolaAnak ? 'Tambah' : 'Usulkan' ?></a>
-                    <?php endif ?>
-                </div>
-                <div class="list-group list-group-flush daftar-orang">
-                    <?php foreach ($anak as $a) : ?><?= $orangKecil($a, label_garis($a->garis)) ?><?php endforeach ?>
-                    <?php if ($anak === []) : ?><div class="list-group-item text-body-secondary small">Belum tercatat.</div><?php endif ?>
-                </div>
-                <?php if ($p->garis === 'boru') : ?><div class="card-footer small text-body-secondary">Anak dari boru dicatat sampai di sini dan tidak diteruskan.</div><?php endif ?>
-            </div>
-            <?php endif ?>
 
             <?php if ($saudara !== []) : ?>
             <div class="card mb-4">

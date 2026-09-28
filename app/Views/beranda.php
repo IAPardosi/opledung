@@ -24,7 +24,7 @@ $maksPung = max([1, ...array_column($punguan, 'jumlah')]);
                 <p class="lead m-0">Lihat garis keturunan Anda dari Sundut 1 sampai hari ini, ketahui partuturan dengan sesama pomparan, dan ikuti kegiatan punguan.</p>
                 <form action="<?= site_url('generasi') ?>" method="get" class="input-kapsul" role="search" style="max-width: 620px">
                     <i class="bi bi-search text-teks-2"></i>
-                    <input type="search" name="q" placeholder="Cari nama atau kode anggota, mis. PDS-G12-000345" aria-label="Cari anggota">
+                    <input type="search" name="q" placeholder="Nama, kode, atau &quot;anak ni …&quot;" aria-label="Cari anggota" data-saran="<?= auth()->loggedIn() && auth()->user()->can('silsilah.view') ? 'profil' : 'mapping' ?>">
                     <button class="btn btn-gelap px-4" type="submit">Cari</button>
                 </form>
                 <div class="d-flex flex-wrap gap-4">
@@ -71,7 +71,7 @@ $maksPung = max([1, ...array_column($punguan, 'jumlah')]);
                     </div>
                     <?php if ($tutur) : ?>
                         <div class="chip-partuturan">
-                            <div class="small fw-bold" style="letter-spacing:.12em;color:var(--merah-terang)">ANDA MEMANGGIL</div>
+                            <div class="small fw-bold" style="letter-spacing:.12em;color:var(--emas)">ANDA MEMANGGIL</div>
                             <div class="h4 m-0"><?= esc($tutur['sebutan']) ?></div>
                             <div class="small" style="color:#cdbfb3"><?= esc($tutur['nama']) ?> · Sundut <?= $tutur['generasi'] ?></div>
                         </div>
@@ -89,11 +89,11 @@ $maksPung = max([1, ...array_column($punguan, 'jumlah')]);
         <div class="bento">
             <a href="<?= site_url('silsilah') ?>" class="besar kartu-gelap position-relative overflow-hidden">
                 <svg viewBox="0 0 460 300" class="ilustrasi-pohon" aria-hidden="true">
-                    <g fill="none" stroke="#5a4a44" stroke-width="2"><path d="M60 150C120 150 120 70 180 70M60 150C120 150 120 230 180 230M240 70C300 70 300 30 360 30M240 70C300 70 300 110 360 110M240 230C300 230 300 190 360 190M240 230C300 230 300 270 360 270"/></g>
-                    <rect x="10" y="132" width="100" height="36" rx="12" fill="#a3161e"/><rect x="180" y="52" width="60" height="36" rx="12" fill="#2b2220"/><rect x="180" y="212" width="60" height="36" rx="12" fill="#2b2220"/><rect x="360" y="12" width="70" height="36" rx="12" fill="#3a2e2a"/><rect x="360" y="92" width="70" height="36" rx="12" fill="#3a2e2a"/><rect x="360" y="172" width="70" height="36" rx="12" fill="#3a2e2a"/><rect x="360" y="252" width="70" height="36" rx="12" fill="#3a2e2a"/>
+                    <g fill="none" stroke="#7c5c16" stroke-width="2"><path d="M60 150C120 150 120 70 180 70M60 150C120 150 120 230 180 230M240 70C300 70 300 30 360 30M240 70C300 70 300 110 360 110M240 230C300 230 300 190 360 190M240 230C300 230 300 270 360 270"/></g>
+                    <rect x="10" y="132" width="100" height="36" rx="12" fill="#a3161e"/><rect x="180" y="52" width="60" height="36" rx="12" fill="#c9a24a"/><rect x="180" y="212" width="60" height="36" rx="12" fill="#c9a24a"/><rect x="360" y="12" width="70" height="36" rx="12" fill="#3a2e2a"/><rect x="360" y="92" width="70" height="36" rx="12" fill="#3a2e2a"/><rect x="360" y="172" width="70" height="36" rx="12" fill="#3a2e2a"/><rect x="360" y="252" width="70" height="36" rx="12" fill="#3a2e2a"/>
                 </svg>
                 <div class="position-relative">
-                    <div class="eyebrow" style="color: var(--merah-terang)">Pohon silsilah</div>
+                    <div class="eyebrow" style="color: var(--emas)">Pohon silsilah</div>
                     <div class="h2 mt-2 mb-0" style="max-width: 320px">Buka cabang demi cabang, tanpa tersesat</div>
                 </div>
                 <div class="position-relative d-flex flex-wrap gap-2 mt-4">

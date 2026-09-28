@@ -91,7 +91,52 @@ class PartuturanService
             'jalur'      => $maju['jalur'],
             'titik_temu' => $maju['titik_temu'],
             'rincian'    => $maju['rincian'],
+            'dalihan'    => $this->dalihan($a, $b),
         ];
+    }
+
+    /**
+     * Makna tiap posisi Dalihan Na Tolu.
+     */
+    public const DALIHAN = [
+        'dongan_tubu' => ['nama' => 'Dongan tubu', 'arti' => 'Semarga, satu garis keturunan laki-laki (termasuk istri-istri mereka).', 'semboyan' => 'Manat mardongan tubu: saling menjaga dan berhati-hati.'],
+        'hula_hula'   => ['nama' => 'Hula-hula', 'arti' => 'Pihak pemberi istri: keluarga ibu, atau keluarga asal bagi boru yang sudah menikah.', 'semboyan' => 'Somba marhula-hula: dihormati, sumber pasu-pasu (berkat).'],
+        'boru'        => ['nama' => 'Boru', 'arti' => 'Pihak penerima istri: saudara perempuan semarga beserta suami dan anak-anaknya.', 'semboyan' => 'Elek marboru: dikasihi dan dibujuk dengan lembut.'],
+    ];
+
+    /**
+     * Posisi Dalihan Na Tolu orang $b bagi $a, dihitung dari garis keduanya dalam silsilah marga.
+     *
+     * @return array{kunci: string, nama: string, arti: string, semboyan: string}|null
+     */
+    public function dalihan(Person $a, Person $b): ?array
+    {
+        if ($a->id === $b->id) {
+            return null;
+        }
+
+        // Pasangan dinilai dari garis orang yang dinikahinya.
+        $garisPasangan = function (Person $p): ?string {
+            if ($p->garis !== 'pasangan') {
+                return $p->garis;
+            }
+            $ids = (new MarriageModel())->pasanganIds($p->id);
+            $ps  = $ids === [] ? null : $this->persons->find($ids[0]);
+
+            return $ps === null ? null : ($ps->garis === 'utama' ? 'istri_utama' : 'suami_boru');
+        };
+        $ga = $garisPasangan($a);
+        $gb = $garisPasangan($b);
+
+        $kunci = match (true) {
+            $ga === 'anak_boru' => in_array($gb, ['utama', 'boru', 'istri_utama'], true) ? 'hula_hula' : null,
+            $ga === 'boru'      => in_array($gb, ['utama', 'istri_utama'], true) ? 'hula_hula' : null,
+            in_array($ga, ['utama', 'istri_utama'], true) => in_array($gb, ['utama', 'istri_utama'], true) ? 'dongan_tubu' : (in_array($gb, ['boru', 'anak_boru', 'suami_boru'], true) ? 'boru' : null),
+            $ga === 'suami_boru' => in_array($gb, ['utama', 'istri_utama', 'boru'], true) ? 'hula_hula' : ($gb === 'anak_boru' ? 'boru' : null),
+            default             => null,
+        };
+
+        return $kunci === null ? null : ['kunci' => $kunci, ...self::DALIHAN[$kunci]];
     }
 
     /**

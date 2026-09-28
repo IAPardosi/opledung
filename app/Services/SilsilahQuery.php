@@ -114,9 +114,11 @@ class SilsilahQuery
                 ? array_intersect_key($p->toArray(), array_flip(self::KOLOM_PUBLIK))
                 : $p->toPublicArray();
             $row['punya_anak'] = isset($punyaAnak[$p->id]);
+            $row['ibu_id']     = $p->ibu_id;
             $row['anak']       = [];
             $nodes[$p->id]     = $row;
         }
+        $this->lengkapiKeluarga($nodes);
 
         // Keturunan sudah terurut per generasi, jadi induk selalu diproses lebih dulu.
         foreach (array_reverse(array_keys($nodes)) as $id) {
@@ -199,9 +201,11 @@ class SilsilahQuery
             $row['punya_anak']  = $row['jumlah_anak'] > 0;
             $row['di_jalur']    = isset($diJalur[$p->id]);
             $row['target']      = $p->id === $target->id;
+            $row['ibu_id']      = $p->ibu_id;
             $row['anak']        = [];
             $nodes[$p->id]      = $row;
         }
+        $this->lengkapiKeluarga($nodes);
 
         foreach (array_reverse(array_keys($nodes)) as $id) {
             $indukId = $nodes[$id]['induk_id'];
@@ -221,6 +225,58 @@ class SilsilahQuery
             'jumlah'    => count($nodes),
             'dipangkas' => $dipangkas,
         ];
+    }
+
+    /**
+     * Kotak keluarga: setiap node membawa pasangannya (istri boleh lebih dari satu,
+     * urut pernikahan ke-), dan anak membawa 'ibu_ke' bila ayahnya beristri lebih dari satu.
+     *
+     * @param array<int, array<string, mixed>> $nodes
+     */
+    private function lengkapiKeluarga(array &$nodes): void
+    {
+        if ($nodes === []) {
+            return;
+        }
+        $ids  = array_keys($nodes);
+        $rows = $this->db->table('marriages m')
+            ->select('m.suami_id, m.istri_id, m.urutan, m.status, p.id, p.nama_lengkap, p.marga_nama, p.status_hidup, p.jenis_kelamin')
+            ->join('persons p', 'p.id = IF(m.suami_id IN (' . implode(',', $ids) . '), m.istri_id, m.suami_id)', '', false)
+            ->groupStart()->whereIn('m.suami_id', $ids)->orWhereIn('m.istri_id', $ids)->groupEnd()
+            ->where('m.deleted_at', null)->where('p.deleted_at', null)
+            ->orderBy('m.urutan')->orderBy('m.id')
+            ->get()->getResultArray();
+
+        foreach ($ids as $id) {
+            $nodes[$id]['pasangan'] = [];
+        }
+        foreach ($rows as $r) {
+            $pemilik = isset($nodes[(int) $r['suami_id']]) ? (int) $r['suami_id'] : (int) $r['istri_id'];
+            if ((int) $r['id'] === $pemilik) {
+                continue;
+            }
+            $nodes[$pemilik]['pasangan'][] = [
+                'id'          => (int) $r['id'],
+                'nama'        => $r['nama_lengkap'],
+                'marga'       => $r['marga_nama'],
+                'ke'          => count($nodes[$pemilik]['pasangan']) + 1,
+                'status_hidup'=> $r['status_hidup'],
+                'cerai'       => $r['status'] === 'cerai_hidup',
+            ];
+        }
+
+        foreach ($nodes as $id => $n) {
+            $induk = $n['induk_id'] !== null ? ($nodes[$n['induk_id']] ?? null) : null;
+            $nodes[$id]['ibu_ke'] = null;
+            if ($induk !== null && count($induk['pasangan']) > 1 && $n['ibu_id'] !== null) {
+                foreach ($induk['pasangan'] as $ps) {
+                    if ($ps['id'] === (int) $n['ibu_id']) {
+                        $nodes[$id]['ibu_ke'] = $ps['ke'];
+                    }
+                }
+            }
+            unset($nodes[$id]['ibu_id']);
+        }
     }
 
     /**

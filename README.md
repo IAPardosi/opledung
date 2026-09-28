@@ -31,7 +31,7 @@ php spark db:seed DatabaseSeeder
 php spark db:seed DemoSilsilahSeeder
 ```
 
-Seeder ini membuat sekitar 4.500 orang **fiktif** dalam 14 generasi, lengkap dengan boru, pasangan, dan anak boru, serta contoh berita, kegiatan, satu pendaftaran yang menunggu validasi, dan Punguan Medan dengan 11 Member Punguan, 4 kategori keuangan, iuran tahun berjalan, dan catatan yang menunggu validasi Penatua.
+Seeder ini membuat sekitar 4.500 orang **fiktif** dalam 14 generasi, lengkap dengan boru, pasangan, dan anak boru, serta contoh berita, kegiatan, satu pendaftaran yang menunggu validasi, dan Punguan Medan dengan 11 Member Punguan, 4 kategori keuangan, iuran tahun berjalan, dan catatan yang menunggu validasi Penatua. Huta diisi per cabang, dan beberapa keluarga beristri dua (termasuk leluhur `member@`) untuk mencoba kotak keluarga.
 
 Akun demo (password `Demo#12345`), semuanya `@silsilah.local`:
 
@@ -68,7 +68,7 @@ Alur pendaftaran: kepala keluarga mendaftarkan diri, istri, dan anak → **valid
 
 ### Aset frontend
 
-Bootstrap, Bootstrap Icons, D3, dan font (Bricolage Grotesque, Figtree) disimpan di `public/assets/vendor` (ikut di-commit), jadi server tidak butuh Node. Untuk memperbarui versinya:
+Bootstrap, Bootstrap Icons, D3, dan font (Fraunces, Figtree) disimpan di `public/assets/vendor` (ikut di-commit), jadi server tidak butuh Node. Untuk memperbarui versinya:
 
 ```bash
 npm install && npm run aset
@@ -102,6 +102,8 @@ vendor/bin/phpunit
 | `app/Services/LingkupAdmin.php` | Lingkup Admin Wilayah (wilayah/cabang pomparan) |
 | `app/Services/PunguanService.php` | Member Punguan: pengajuan, pengesahan Penatua, nonaktif |
 | `app/Services/KeuanganService.php` | Keuangan punguan: kategori, catat, validasi, rekap iuran |
+| `app/Services/PencarianService.php` | Saran pencarian: nama, kode, "anak ni …", nama + tempat, salah ketik |
+| `public/assets/js/saran-orang.js` | Kartu saran pencarian (foto, huta, punguan) dengan papan ketik |
 | `app/Services/ImportService.php` | Import Excel/CSV, semua-atau-tidak-sama-sekali |
 | `public/assets/js/pohon.js` | Pohon interaktif D3 dengan lazy load per cabang |
 | `app/Services/DataPribadiCipher.php` | Enkripsi NIK/No. KK (UU PDP) |

@@ -153,6 +153,7 @@ class DemoSilsilahSeeder extends Seeder
         $this->buatAkunDemo((int) $marga['id'], $contohMember);
         $this->call(DemoKontenSeeder::class);
         $this->call(DemoPunguanSeeder::class);
+        $this->call(DemoKeluargaSeeder::class);
 
         $total = $this->db->table('persons')->where('marga_id', $marga['id'])->countAllResults();
         printf('  Total %d orang dalam %.1f detik.%s', $total, microtime(true) - $mulai, PHP_EOL);

@@ -43,7 +43,7 @@
                     <button class="btn btn-light btn-sm border" id="zoomReset" title="Posisi awal"><i class="bi bi-arrows-angle-contract"></i></button>
                 </div>
                 <div class="pohon-legenda">
-                    <i class="garis-utama"></i>Garis utama <i class="garis-boru"></i>Boru <i class="garis-anak_boru"></i>Anak boru
+                    <i class="garis-utama"></i>Anak (garis utama) <i class="garis-boru"></i>Boru <i class="garis-anak_boru"></i>Anak boru <i class="garis-pasangan"></i>Istri/suami
                 </div>
             </div>
             <p class="small text-body-secondary mt-2 mb-0"><i class="bi bi-info-circle"></i> Klik kartu untuk melihat ringkasan. Klik tanda <b>+</b> untuk membuka generasi berikutnya. Geser dan gulir untuk menjelajah.</p>

@@ -13,16 +13,18 @@ const salin = [
 ];
 
 // Font: hanya subset latin woff2 (cukup untuk Bahasa Indonesia dan Batak).
+// [nama, paket, bobot, gaya]
 const font = [
-    ['Bricolage Grotesque', 'bricolage-grotesque', [600, 700, 800]],
-    ['Figtree', 'figtree', [400, 500, 600, 700]],
+    ['Fraunces', 'fraunces', [500, 600, 700], 'normal'],
+    ['Fraunces', 'fraunces', [500], 'italic'],
+    ['Figtree', 'figtree', [400, 500, 600, 700], 'normal'],
 ];
 let css = '/* Dibuat oleh scripts/salin-aset.mjs */\n';
-for (const [nama, paket, bobot] of font) {
+for (const [nama, paket, bobot, gaya] of font) {
     for (const b of bobot) {
-        const berkas = `${paket}-latin-${b}-normal.woff2`;
+        const berkas = `${paket}-latin-${b}-${gaya}.woff2`;
         salin.push([`node_modules/@fontsource/${paket}/files/${berkas}`, `fonts/${berkas}`]);
-        css += `@font-face{font-family:'${nama}';font-style:normal;font-display:swap;font-weight:${b};src:url(./${berkas}) format('woff2');}\n`;
+        css += `@font-face{font-family:'${nama}';font-style:${gaya};font-display:swap;font-weight:${b};src:url(./${berkas}) format('woff2');}\n`;
     }
 }
 

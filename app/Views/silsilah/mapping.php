@@ -87,7 +87,7 @@ $url    = static fn (array $q = []): string => site_url('mapping' . ($target && 
                         <button class="btn btn-light btn-sm border" id="zoomSemua" title="Lihat seluruhnya"><i class="bi bi-arrows-fullscreen"></i></button>
                     </div>
                     <div class="pohon-legenda">
-                        <i class="garis-jalur"></i>Jalur <?= $diri ? 'saya' : 'terpilih' ?> <i class="garis-utama"></i>Garis utama <i class="garis-boru"></i>Boru <span class="ms-2 fw-bold">+N</span> belum dibuka
+                        <i class="garis-jalur"></i>Jalur <?= $diri ? 'saya' : 'terpilih' ?> <i class="garis-utama"></i>Anak <i class="garis-boru"></i>Boru <i class="garis-pasangan"></i>Istri/suami <span class="ms-2 fw-bold">+N</span> belum dibuka
                     </div>
                 </div>
                 <p class="small text-body-secondary mt-2 mb-0"><i class="bi bi-hand-index"></i> Klik kartu untuk ringkasan. Klik <b>+N</b> untuk membuka saudara atau anak yang dilipat. Geser dan gulir untuk menjelajah.</p>
