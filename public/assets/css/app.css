@@ -426,3 +426,4 @@ dl.data-profil dd { margin-bottom: .6rem; font-weight: 500; }
 .kotak-dnt { background: #1a1513; border: 1px solid #5c4a22; border-radius: 18px; padding: 1rem 1.1rem; height: 100%; }
 .chip-dnt { display: inline-block; font-size: .72rem; font-weight: 600; padding: .25rem .6rem; border-radius: 999px; border: 1px solid #3a2f27; color: #9c8f80; }
 .chip-dnt.aktif { background: var(--emas); border-color: var(--emas); color: var(--hitam); font-weight: 700; }
+.versi-aplikasi { color: #8b7d6d; font-size: .75rem; letter-spacing: .04em; }

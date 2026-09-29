@@ -34,7 +34,7 @@ $aktif = static fn (string ...$awal): string => array_filter($awal, static fn ($
     <link rel="icon" href="<?= base_url('assets/img/logo.svg') ?>" type="image/svg+xml">
     <link href="<?= base_url('assets/vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
     <link href="<?= base_url('assets/vendor/bootstrap-icons/bootstrap-icons.min.css') ?>" rel="stylesheet">
-    <link href="<?= base_url('assets/css/app.css') ?>" rel="stylesheet">
+    <link href="<?= aset('assets/css/app.css') ?>" rel="stylesheet">
     <?= $this->renderSection('pageStyles') ?>
 </head>
 <body>
@@ -179,6 +179,7 @@ $aktif = static fn (string ...$awal): string => array_filter($awal, static fn ($
             <div class="col-lg-7">
                 <p class="motto mb-2">Somba marhula-hula, <span>elek marboru,</span> manat mardongan tubu.</p>
                 <p class="small mb-0">Dalihan Na Tolu · Data pribadi dilindungi UU No. 27 Tahun 2022 · Silsilah disahkan Ketua Adat dan penatua punguan.</p>
+                <p class="small mb-0 mt-2 versi-aplikasi">Versi <?= esc(config('Silsilah')->versi) ?></p>
             </div>
             <div class="col-lg-5 small d-flex flex-wrap gap-3 justify-content-lg-end">
                 <a href="<?= site_url('kenali-marga') ?>">Kenali Marga</a>
@@ -201,7 +202,7 @@ $aktif = static fn (string ...$awal): string => array_filter($awal, static fn ($
 
 <script src="<?= base_url('assets/vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
 <script>window.SILSILAH_URL = window.SILSILAH_URL || <?= json_encode(rtrim(site_url('/'), '/') . '/') ?>;</script>
-<script src="<?= base_url('assets/js/saran-orang.js') ?>"></script>
+<script src="<?= aset('assets/js/saran-orang.js') ?>"></script>
 <?= $this->renderSection('pageScripts') ?>
 </body>
 </html>

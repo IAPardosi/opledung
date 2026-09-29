@@ -45,6 +45,25 @@ Akun demo (password `Demo#12345`), semuanya `@silsilah.local`:
 | `member@` | Member Punguan Medan (Sundut 12), iuran lancar |
 | `calon@` | Calon member dengan pendaftaran keluarga yang menunggu validasi |
 
+## Memperbarui kode di komputer lokal
+
+```bash
+git status                                        # pastikan tidak ada perubahan lokal (lihat catatan)
+git fetch origin
+git checkout claude/elegant-babbage-fnn1in
+git pull origin claude/elegant-babbage-fnn1in
+git log --oneline -1                              # harus sama dengan commit terbaru di GitHub
+composer install                                  # bila composer.lock berubah
+php spark migrate --all                           # tabel/kolom baru (mis. huta)
+php spark db:seed DemoKeluargaSeeder              # opsional: contoh huta & keluarga beristri dua
+```
+
+- Footer setiap halaman menampilkan **Versi** aplikasi; bandingkan dengan `app/Config/Silsilah.php` (`$versi`).
+- CSS/JS dimuat dengan penanda waktu (`app.css?v=…`), jadi browser otomatis mengambil versi terbaru.
+- Bila `git pull` menolak karena ada perubahan lokal: `git stash` lalu ulangi `git pull`
+  (atau `git checkout -- .` untuk membuang perubahan lokal).
+- Bila kode diunduh sebagai ZIP, unduh ulang ZIP dari branch `claude/elegant-babbage-fnn1in`, bukan dari branch lain.
+
 ## Menjalankan
 
 ```bash

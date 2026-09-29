@@ -171,5 +171,5 @@ $q = static fn (array $ubah = []): string => site_url('admin/punguan-anggota') .
 
 <?= $this->section('pageScripts') ?>
 <script>window.SILSILAH_URL = <?= json_encode(rtrim(site_url('/'), '/') . '/') ?>;</script>
-<script src="<?= base_url('assets/js/pilih-orang.js') ?>"></script>
+<script src="<?= aset('assets/js/pilih-orang.js') ?>"></script>
 <?= $this->endSection() ?>

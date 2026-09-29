@@ -24,6 +24,11 @@ class Silsilah extends BaseConfig
     /**
      * @var array<string, string>
      */
+    /**
+     * Versi aplikasi (tampil di footer) untuk memastikan kode di server/komputer sudah terbaru.
+     */
+    public string $versi = '3.2 · Ulos Emas Terang';
+
     public array $jenisKelamin = [
         'L' => 'Laki-laki',
         'P' => 'Perempuan',

@@ -31,5 +31,5 @@ $v = static fn (string $k, $d = '') => old($k, $p[$k] ?? $d);
 <?= $this->endSection() ?>
 
 <?= $this->section('pageScripts') ?>
-<script src="<?= base_url('assets/js/pilih-kabupaten.js') ?>"></script>
+<script src="<?= aset('assets/js/pilih-kabupaten.js') ?>"></script>
 <?= $this->endSection() ?>

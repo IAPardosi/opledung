@@ -239,5 +239,5 @@ $kembali      = ($person?->id ?? $induk?->id) ? site_url('anggota/' . ($person?-
 <?= $this->endSection() ?>
 
 <?= $this->section('pageScripts') ?>
-<script src="<?= base_url('assets/js/form-anggota.js') ?>"></script>
+<script src="<?= aset('assets/js/form-anggota.js') ?>"></script>
 <?= $this->endSection() ?>

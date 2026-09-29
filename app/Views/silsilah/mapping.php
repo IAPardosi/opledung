@@ -115,5 +115,5 @@ $url    = static fn (array $q = []): string => site_url('mapping' . ($target && 
     };
     document.getElementById('dari')?.addEventListener('change', (e) => e.target.form.submit());
 </script>
-<script src="<?= base_url('assets/js/pohon.js') ?>"></script>
+<script src="<?= aset('assets/js/pohon.js') ?>"></script>
 <?= $this->endSection() ?>

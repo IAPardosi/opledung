@@ -69,6 +69,6 @@
         label: {utama: 'Garis utama', boru: 'Boru', anak_boru: 'Anak boru'},
     };
 </script>
-<script src="<?= base_url('assets/js/pohon.js') ?>"></script>
+<script src="<?= aset('assets/js/pohon.js') ?>"></script>
 <?php endif ?>
 <?= $this->endSection() ?>

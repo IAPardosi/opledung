@@ -121,7 +121,7 @@
 
 <?= $this->section('pageScripts') ?>
 <script>window.SILSILAH_URL = <?= json_encode(rtrim(site_url('/'), '/') . '/') ?>;</script>
-<script src="<?= base_url('assets/js/pilih-orang.js') ?>"></script>
-<script src="<?= base_url('assets/js/form-anggota.js') ?>"></script>
-<script src="<?= base_url('assets/js/pendaftaran.js') ?>"></script>
+<script src="<?= aset('assets/js/pilih-orang.js') ?>"></script>
+<script src="<?= aset('assets/js/form-anggota.js') ?>"></script>
+<script src="<?= aset('assets/js/pendaftaran.js') ?>"></script>
 <?= $this->endSection() ?>

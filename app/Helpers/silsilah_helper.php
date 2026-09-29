@@ -147,3 +147,16 @@ if (! function_exists('rupiah')) {
         return 'Rp' . number_format((int) $n, 0, ',', '.');
     }
 }
+
+if (! function_exists('aset')) {
+    /**
+     * URL aset dengan penanda versi (waktu ubah berkas), agar browser selalu memuat CSS/JS terbaru
+     * setelah kode diperbarui, tanpa perlu menghapus cache secara manual.
+     */
+    function aset(string $path): string
+    {
+        $berkas = FCPATH . ltrim($path, '/');
+
+        return base_url($path) . (is_file($berkas) ? '?v=' . filemtime($berkas) : '');
+    }
+}
